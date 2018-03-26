@@ -13,11 +13,12 @@ node('intake-slave') {
     /* dateFormatGmt.setTimeZone(TimeZone.getTimeZone("GMT")); */
 
     try {
+    /*
         stage('Test') {
             curStage = 'Test'
             sh 'make test'
         }
-
+    */
         if (branch == 'master') {
             int offset = VERSION_STRATEGY.split(':')[1]
             int buildNumber = (BUILD_NUMBER.toInteger() - offset).toString()
@@ -109,6 +110,9 @@ node('intake-slave') {
             retry(2) {
                 sh 'make clean'
             }
+        }
+        stage('Deploy Preint') {
+            sh "curl -v http://${JENKINS_USER}:${JENKINS_API_TOKEN}@jenkins.mgmt.cwds.io:8080/job/preint/job/deploy-intake/buildWithParameters?token=${JENKINS_TRIGGER_TOKEN}&cause=Caused%20by%20Build%20${env.BUILD_ID}"
         }
     }
 }

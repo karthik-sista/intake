@@ -58,10 +58,10 @@ release:
 	@ docker-compose $(RELEASE_ARGS) build $(BUILD_ARGS) app
 	@ wait
 	${INFO} "Release image build complete..."
-	${INFO} "Starting application..."
-	@ docker-compose $(RELEASE_ARGS) up -d nginx
-	@ $(call check_service_health,$(RELEASE_ARGS),nginx)
-	${INFO} "Application is running at http://$(DOCKER_HOST_IP):$(call get_port_mapping,$(RELEASE_ARGS),nginx,$(HTTP_PORT))"
+	#${INFO} "Starting application..."
+	#@ docker-compose $(RELEASE_ARGS) up -d nginx
+	#@ $(call check_service_health,$(RELEASE_ARGS),nginx)
+	#${INFO} "Application is running at http://$(DOCKER_HOST_IP):$(call get_port_mapping,$(RELEASE_ARGS),nginx,$(HTTP_PORT))"
 
 clean:
 	${INFO} "Deleting application release artifacts..."

@@ -1,6 +1,6 @@
 import java.text.SimpleDateFormat
 
-node('intake-slave') {
+node('master') {
     checkout scm
     def branch = env.BRANCH_NAME ?: (env.GIT_BRANCH ?: 'master')
     def curStage = 'Start'

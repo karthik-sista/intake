@@ -33,9 +33,9 @@ const PersonDemographicsForm = ({
         value={dateOfBirth}
         onChange={(value) => onChange('date_of_birth', value)}
       />
-      <div className='col-md-1 centered'><p><label>&nbsp;</label>or</p></div>
+      <div className='col-md-1'><p><label>&nbsp;</label>or</p></div>
       <InputField
-        gridClassName='col-md-2'
+        gridClassName='col-md-3'
         id='approximate_age'
         label='Approximate Age'
         allowCharacters={/[0-9]/}
@@ -57,7 +57,7 @@ const PersonDemographicsForm = ({
         </select>
       </div>
       <SelectField
-        gridClassName='col-md-4'
+        gridClassName='col-md-3'
         id='gender'
         label='Gender'
         value={gender}

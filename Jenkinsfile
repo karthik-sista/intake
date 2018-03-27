@@ -10,16 +10,16 @@ node('master') {
     SimpleDateFormat dateFormatGmt = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
     def buildDate = dateFormatGmt.format(new Date())
 
-    /* dateFormatGmt.setTimeZone(TimeZone.getTimeZone("GMT")); */
-
     try {
-    /*
+        /*
         stage('Test') {
             curStage = 'Test'
             sh 'make test'
         }
-    */
+        */
+
         if (branch == 'master') {
+            // Set an offset for the version number
             int offset = VERSION_STRATEGY.split(':')[1]
             int buildNumber = (BUILD_NUMBER.toInteger() - offset).toString()
             VERSION = sh(
@@ -30,19 +30,18 @@ node('master') {
                 script: 'git rev-parse --short HEAD',
                 returnStdout: true
             )
+            /*
 
             stage('Build') {
                 curStage = 'Build'
                 sh 'make build'
             }
-
             stage('Release') {
                 curStage = 'Release'
                 withEnv(["BUILD_DATE=${buildDate}","BUILD_NUMBER=${BUILD_NUMBER}","VERSION=${VERSION}","VCS_REF=${VCS_REF}"]) {
                     sh 'make release'
                 }
             }
-
             stage('Publish') {
                 withDockerRegistry([credentialsId: '6ba8d05c-ca13-4818-8329-15d41a089ec0']) {
                 curStage = 'Publish'
@@ -54,6 +53,7 @@ node('master') {
                 sh "make publish"
                 }
             }
+            */
         }
     }
     catch (e) {
@@ -62,6 +62,7 @@ node('master') {
     }
     finally {
         try {
+          /*
             stage ('Reports') {
                 step([$class: 'JUnitResultArchiver', testResults: '**/reports/*.xml'])
 
@@ -83,13 +84,14 @@ node('master') {
                     reportName: 'Ruby Code Coverage'
                 ])
             }
+            */
         }
         catch(e) {
             pipelineStatus = 'FAILED'
             currentBuild.result = 'FAILURE'
         }
-
         // disabling slack alerts when using a branch different from master.
+        /*
         if (branch == 'master') {
           try {
 
@@ -103,16 +105,26 @@ node('master') {
 
               slackSend channel: "#tech-intake", baseUrl: 'https://hooks.slack.com/services/', tokenCredentialId: 'slackmessagetpt2', color: slackAlertColor, message: slackMessage
           }
-          catch(e) { /* Nothing to do */ }
+          catch(e) {  }
         }
-
+        */
+        /*
         stage('Clean') {
             retry(2) {
                 sh 'make clean'
             }
         }
-        stage('Deploy Preint') {
+        */
+        try {
+          stage('Deploy Preint') {
             sh "curl -v http://${JENKINS_USER}:${JENKINS_API_TOKEN}@jenkins.mgmt.cwds.io:8080/job/preint/job/deploy-intake/buildWithParameters?token=${JENKINS_TRIGGER_TOKEN}&cause=Caused%20by%20Build%20${env.BUILD_ID}"
+              pipelineStatus = 'SUCCEEDED'
+              currentBuild.result = 'SUCCESS'
+
+          }
+        } catch(e){
+            pipelineStatus = 'FAILED'
+            currentBuild.result = 'FAILURE'
         }
     }
 }

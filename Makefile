@@ -22,6 +22,7 @@ test:
 	@ docker-compose $(TEST_ARGS) pull
 	${INFO} "Building images..."
 	@ docker-compose $(TEST_ARGS) build rspec_test &
+	
 	@ docker-compose $(TEST_ARGS) build lint &
 	@ docker-compose $(TEST_ARGS) build javascript_test &
 	@ wait
@@ -39,6 +40,7 @@ test:
 	${INFO} "Testing complete"
 
 build:
+	${INFO} "The test args are $(TEST_ARGS)"
 	${INFO} "Building images..."
 	@ docker-compose $(TEST_ARGS) build builder
 	${INFO} "Building application artifacts..."

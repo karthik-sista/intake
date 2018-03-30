@@ -21,21 +21,12 @@ test:
 	${INFO} "Pulling latest images..."
 	@ docker-compose $(TEST_ARGS) pull
 	${INFO} "Building images..."
-	@ docker-compose $(TEST_ARGS) build rspec_test &
-	@ docker-compose $(TEST_ARGS) build lint &
-	@ docker-compose $(TEST_ARGS) build javascript_test &
+	@ docker-compose $(TEST_ARGS) build run_tests &
 	@ wait
-	${INFO} "Running lint..."
-	@ docker-compose $(TEST_ARGS) up lint
-	@ docker cp $$(docker-compose $(TEST_ARGS) ps -q lint):/reports/. reports
-	@ $(call check_exit_code,$(TEST_ARGS),lint)
 	${INFO} "Running tests..."
-	@ docker-compose $(TEST_ARGS) up rspec_test
-	@ docker cp $$(docker-compose $(TEST_ARGS) ps -q rspec_test):/reports/. reports
-	@ docker-compose $(TEST_ARGS) up javascript_test
-	@ docker cp $$(docker-compose $(TEST_ARGS) ps -q javascript_test):/reports/. reports
-	@ $(call check_exit_code,$(TEST_ARGS),rspec_test)
-	@ $(call check_exit_code,$(TEST_ARGS),javascript_test)
+	@ docker-compose $(TEST_ARGS) up run_tests
+	@ docker cp $$(docker-compose $(TEST_ARGS) ps -q run_tests):/reports/. reports
+	@ $(call check_exit_code,$(TEST_ARGS),run_tests)
 	${INFO} "Testing complete"
 
 build:

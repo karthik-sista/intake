@@ -1,4 +1,6 @@
 FROM cwds/intake_testing_base_image:latest
+LABEL application=intake_accelerator
+
 ENV APP_HOME /ca_intake
 RUN mkdir $APP_HOME
 WORKDIR $APP_HOME

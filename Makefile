@@ -21,7 +21,7 @@ test:
 	${INFO} "Pulling latest images..."
 	@ docker-compose $(TEST_ARGS) pull
 	${INFO} "Building images..."
-	@ docker-compose $(TEST_ARGS) build run_tests &
+	@ docker-compose $(TEST_ARGS) build run_tests
 	@ wait
 	${INFO} "Running tests..."
 	@ docker-compose $(TEST_ARGS) up run_tests

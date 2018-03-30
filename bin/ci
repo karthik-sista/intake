@@ -1,4 +1,5 @@
 #!/bin/bash
-RAILS_ENV=test bin/webpack && bundle exec parallel_rspec --runtime-log parallel_runtime_rspec.log spec
+RAILS_ENV=test bin/webpack
+bundle exec parallel_rspec --runtime-log parallel_runtime_rspec.log spec
 bin/lint
 bin/ci-javascript

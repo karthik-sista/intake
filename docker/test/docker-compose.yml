@@ -1,7 +1,7 @@
 version: '2.1'
 
 services:
-  rspec_test:
+  run_tests:
     build:
       context: ../../
       dockerfile: docker/test/Dockerfile

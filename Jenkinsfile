@@ -13,8 +13,8 @@ node('intake-slave') {
     try {
 
         stage('Test') {
-           curStage = 'Test'
-           sh 'make test'
+            curStage = 'Test'
+            sh 'make test'
         }
 
         if (branch == 'master') {

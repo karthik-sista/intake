@@ -26,6 +26,7 @@ test:
 	${INFO} "Running tests..."
 	@ docker-compose $(TEST_ARGS) up run_tests
 	@ docker cp $$(docker-compose $(TEST_ARGS) ps -q run_tests):/reports/. reports
+	@ wait
 	@ $(call check_exit_code,$(TEST_ARGS),run_tests)
 	${INFO} "Testing complete"
 

@@ -35,10 +35,6 @@ node('intake-slave') {
           sh './scripts/ci/acceptance_test.rb'
         }
       }
-
-
-    }
-
   } catch (e) {
     pipelineStatus = 'FAILED'
     currentBuild.result = 'FAILURE'

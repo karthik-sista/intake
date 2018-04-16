@@ -11,27 +11,8 @@ node('intake-slave') {
   def buildDate = dateFormatGmt.format(new Date())
 
   try {
-
-      VERSION = sh(returnStdout: true, script: './scripts/ci/compute_version.rb').trim()
-      VCS_REF = sh(
-        script: 'git rev-parse --short HEAD',
-        returnStdout: true
-      )
-
-      stage('Build') {
-        curStage = 'Build'
-        sh 'make build'
-      }
-
-      stage('Release') {
-        curStage = 'Release'
-        withEnv(["BUILD_DATE=${buildDate}","VERSION=${VERSION}","VCS_REF=${VCS_REF}"]) {
-          sh 'make release'
-        }
-      }
-
       stage('Acceptance test Bubble'){
-        withEnv(["INTAKE_IMAGE_VERSION=intakeaccelerator${BUILD_NUMBER}_app"]) {
+        withEnv(["INTAKE_IMAGE_OLD_VERSION=intakeaccelerator${BUILD_NUMBER}_app"]) {
           sh './scripts/ci/acceptance_test.rb'
         }
       }

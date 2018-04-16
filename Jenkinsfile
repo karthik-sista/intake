@@ -9,11 +9,14 @@ node('intake-slave') {
   def failureColor = '#FF0000'
   SimpleDateFormat dateFormatGmt = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
   def buildDate = dateFormatGmt.format(new Date())
+  def docker_credentials_id = '6ba8d05c-ca13-4818-8329-15d41a089ec0'
 
   try {
       stage('Acceptance test Bubble'){
-        withEnv(["INTAKE_IMAGE_OLD_VERSION=intakeaccelerator${BUILD_NUMBER}_app"]) {
-          sh './scripts/ci/acceptance_test.rb'
+        withDockerRegistry([credentialsId: docker_credentials_id]){
+          withEnv(["INTAKE_IMAGE_OLD_VERSION=intakeaccelerator${BUILD_NUMBER}_app"]) {
+            sh './scripts/ci/acceptance_test.rb'
+          }
         }
       }
   } catch (e) {

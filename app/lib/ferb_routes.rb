@@ -11,6 +11,10 @@ class FerbRoutes
       "/intake/screenings/#{id}"
     end
 
+    def update_screening_path(id)
+      "/intake/screenings/#{id}"
+    end
+
     def screening_history_of_involvements_path(id)
       "/screenings/#{id}/history_of_involvements"
     end

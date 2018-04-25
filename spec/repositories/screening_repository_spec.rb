@@ -9,18 +9,18 @@ describe ScreeningRepository do
   describe '.create' do
     let(:screening_id) { '11' }
     let(:response) { double(:response, body: { 'id' => screening_id, 'name' => 'New Screening' }) }
-    let(:screening) { double(:screening, as_json: { 'id' => nil, 'name' => 'New Screening' }) }
+    let(:screening) { double(:screening, as_json: { 'name' => 'New Screening' }) }
 
     before do
-      expect(IntakeAPI).to receive(:make_api_call)
-        .with(security_token, '/api/v1/screenings', :post, 'name' => 'New Screening')
+      expect(FerbAPI).to receive(:make_api_call)
+        .with(security_token, '/intake/screenings', :post, 'name' => 'New Screening')
         .and_return(response)
     end
 
     it 'returns the created screening' do
-      created_screening = described_class.create(security_token, screening)
-      expect(created_screening.id).to eq(screening_id)
-      expect(created_screening.name).to eq('New Screening')
+      created_screening = JSON.parse(described_class.create(security_token, screening))
+      expect(created_screening['id']).to eq(screening_id)
+      expect(created_screening['name']).to eq('New Screening')
     end
   end
 
@@ -93,7 +93,7 @@ describe ScreeningRepository do
 
     before do
       expect(FerbAPI).to receive(:make_api_call)
-        .with(security_token, '/screenings', :get)
+        .with(security_token, '/intake/screenings', :get)
         .and_return(response)
     end
 

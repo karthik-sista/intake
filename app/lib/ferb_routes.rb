@@ -4,7 +4,7 @@
 class FerbRoutes
   class << self
     def screenings_path
-      '/screenings'
+      '/intake/screenings'
     end
 
     def screening_history_of_involvements_path(id)

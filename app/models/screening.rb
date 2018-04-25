@@ -26,6 +26,7 @@ class Screening # :nodoc:
   attribute :started_at
   attribute :indexable
   attribute :address, Address, default: ->(_, _) { Address.new }
+  attribute :addresses, Array[Address], default: ->(_, _) { [] }
   attribute :assignee, String
   attribute :cross_reports, Array[CrossReport]
   attribute :participants, Array[Participant]

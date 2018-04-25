@@ -4,9 +4,9 @@
 # resource via the API
 class ScreeningRepository
   def self.create(security_token, screening)
-    response = IntakeAPI.make_api_call(
+    response = FerbAPI.make_api_call(
       security_token,
-      ExternalRoutes.intake_api_screenings_path,
+      FerbRoutes.create_screening_path,
       :post,
       screening.as_json.except('id')
     )

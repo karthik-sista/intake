@@ -14,10 +14,10 @@ feature 'cross reports' do
 
   scenario 'adding cross reports to an existing screening' do
     stub_request(
-      :get, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening.id))
+      :get, ferb_api_url(FerbRoutes.get_screening_path(existing_screening.id))
     ).and_return(json_body(existing_screening.to_json, status: 200))
     stub_request(
-      :put, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening.id))
+      :put, ferb_api_url(FerbRoutes.update_screening_path(existing_screening.id))
     ).and_return(json_body(existing_screening.to_json, status: 200))
     stub_empty_relationships
     stub_empty_history_for_screening(existing_screening)
@@ -43,7 +43,7 @@ feature 'cross reports' do
 
     expect(
       a_request(
-        :put, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening.id))
+        :put, ferb_api_url(FerbRoutes.update_screening_path(existing_screening.id))
       ).with(
         body: hash_including(
           'cross_reports' => array_including(
@@ -78,10 +78,10 @@ feature 'cross reports' do
       )
     ]
     stub_request(
-      :get, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening.id))
+      :get, ferb_api_url(FerbRoutes.get_screening_path(existing_screening.id))
     ).and_return(json_body(existing_screening.to_json, status: 200))
     stub_request(
-      :put, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening.id))
+      :put, ferb_api_url(FerbRoutes.update_screening_path(existing_screening.id))
     ).and_return(json_body(existing_screening.to_json, status: 200))
     stub_empty_relationships
     stub_empty_history_for_screening(existing_screening)
@@ -107,7 +107,7 @@ feature 'cross reports' do
 
     expect(
       a_request(
-        :put, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening.id))
+        :put, ferb_api_url(FerbRoutes.update_screening_path(existing_screening.id))
       ).with(
         body: hash_including(
           'cross_reports' => array_including(
@@ -139,7 +139,7 @@ feature 'cross reports' do
       )
     ]
     stub_request(
-      :get, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening.id))
+      :get, ferb_api_url(FerbRoutes.get_screening_path(existing_screening.id))
     ).and_return(json_body(existing_screening.to_json, status: 200))
     stub_empty_relationships
     stub_empty_history_for_screening(existing_screening)
@@ -173,7 +173,7 @@ feature 'cross reports' do
   scenario 'viewing empty cross reports on an existing screening' do
     stub_request(
       :get,
-      intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening.id))
+      ferb_api_url(FerbRoutes.get_screening_path(existing_screening.id))
     ).and_return(json_body(existing_screening.to_json, status: 200))
     stub_empty_relationships
     stub_empty_history_for_screening(existing_screening)
@@ -189,10 +189,10 @@ feature 'cross reports' do
 
   scenario 'communication method and time fields are cached' do
     stub_request(
-      :get, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening.id))
+      :get, ferb_api_url(FerbRoutes.get_screening_path(existing_screening.id))
     ).and_return(json_body(existing_screening.to_json, status: 200))
     stub_request(
-      :put, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening.id))
+      :put, ferb_api_url(FerbRoutes.update_screening_path(existing_screening.id))
     ).and_return(json_body(existing_screening.to_json, status: 200))
     stub_empty_relationships
     stub_empty_history_for_screening(existing_screening)
@@ -216,7 +216,7 @@ feature 'cross reports' do
 
     expect(
       a_request(
-        :put, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening.id))
+        :put, ferb_api_url(FerbRoutes.update_screening_path(existing_screening.id))
       ).with(
         body: hash_including(
           'cross_reports' => array_including(
@@ -235,10 +235,10 @@ feature 'cross reports' do
 
   scenario 'communication method and time fields are cleared after county change' do
     stub_request(
-      :get, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening.id))
+      :get, ferb_api_url(FerbRoutes.get_screening_path(existing_screening.id))
     ).and_return(json_body(existing_screening.to_json, status: 200))
     stub_request(
-      :put, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening.id))
+      :put, ferb_api_url(FerbRoutes.update_screening_path(existing_screening.id))
     ).and_return(json_body(existing_screening.to_json, status: 200))
     stub_empty_relationships
     stub_empty_history_for_screening(existing_screening)
@@ -267,7 +267,7 @@ feature 'cross reports' do
 
     expect(
       a_request(
-        :put, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening.id))
+        :put, ferb_api_url(FerbRoutes.update_screening_path(existing_screening.id))
       ).with(
         body: hash_including(
           'cross_reports' => array_including(
@@ -286,10 +286,10 @@ feature 'cross reports' do
 
   scenario 'communication method and time fields are cleared from cache after save' do
     stub_request(
-      :get, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening.id))
+      :get, ferb_api_url(FerbRoutes.get_screening_path(existing_screening.id))
     ).and_return(json_body(existing_screening.to_json, status: 200))
     stub_request(
-      :put, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening.id))
+      :put, ferb_api_url(FerbRoutes.update_screening_path(existing_screening.id))
     ).and_return(json_body(existing_screening.to_json, status: 200))
     stub_empty_relationships
     stub_empty_history_for_screening(existing_screening)

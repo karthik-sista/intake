@@ -248,7 +248,7 @@ feature 'History card' do
       existing_screening.participants = [FactoryBot.create(:participant)]
 
       stub_request(
-        :get, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening.id))
+        :get, ferb_api_url(FerbRoutes.get_screening_path(existing_screening.id))
       ).and_return(json_body(existing_screening.to_json))
 
       stub_request(

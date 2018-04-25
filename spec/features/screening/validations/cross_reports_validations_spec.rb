@@ -85,7 +85,7 @@ feature 'Cross Reports Validations' do
         end
 
         scenario 'shows error on save page' do
-          stub_request(:put, intake_api_url(ExternalRoutes.intake_api_screening_path(screening.id)))
+          stub_request(:put, ferb_api_url(FerbRoutes.update_screening_path(screening.id)))
             .and_return(json_body(screening.to_json, status: 201))
 
           select '', from: 'County licensing agency name'
@@ -101,7 +101,7 @@ feature 'Cross Reports Validations' do
           stub_county_agencies('c41')
           screening.cross_reports[0].agencies[0].id = 'EYIS9Nh75C'
           stub_and_visit_edit_screening(screening)
-          stub_request(:put, intake_api_url(ExternalRoutes.intake_api_screening_path(screening.id)))
+          stub_request(:put, ferb_api_url(FerbRoutes.update_screening_path(screening.id)))
             .and_return(json_body(screening.to_json, status: 201))
         end
         scenario 'shows no error when filled in' do

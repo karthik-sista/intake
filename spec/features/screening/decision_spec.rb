@@ -16,7 +16,7 @@ feature 'decision card' do
 
   before(:each) do
     stub_empty_history_for_screening(screening)
-    stub_request(:get, intake_api_url(ExternalRoutes.intake_api_screening_path(screening.id)))
+    stub_request(:get, ferb_api_url(FerbRoutes.get_screening_path(screening.id)))
       .and_return(json_body(screening.to_json, status: 200))
     stub_empty_relationships
     stub_empty_history_for_screening(screening)
@@ -94,8 +94,8 @@ feature 'decision card' do
       access_restrictions: 'sensitive'
     )
 
-    stub_request(:put, intake_api_url(ExternalRoutes.intake_api_screening_path(screening.id)))
-      .with(json_body(as_json_without_root_id(screening)))
+    stub_request(:put, ferb_api_url(FerbRoutes.update_screening_path(screening.id)))
+      .with(json_body(screening.as_json))
       .and_return(json_body(screening.to_json))
 
     within '#decision-card.edit' do
@@ -113,8 +113,8 @@ feature 'decision card' do
       click_button 'Save'
     end
     expect(
-      a_request(:put, intake_api_url(ExternalRoutes.intake_api_screening_path(screening.id)))
-      .with(json_body(as_json_without_root_id(screening)))
+      a_request(:put, ferb_api_url(FerbRoutes.update_screening_path(screening.id)))
+      .with(json_body(screening.as_json))
     ).to have_been_made
     within '#decision-card.show' do
       expect(page).to have_content('SDM Hotline Tool')

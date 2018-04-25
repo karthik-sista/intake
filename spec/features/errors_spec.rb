@@ -31,7 +31,7 @@ feature 'error pages' do
 
   context 'screening does not exist' do
     before(:each) do
-      stub_request(:get, intake_api_url(ExternalRoutes.intake_api_screening_path(screening.id)))
+      stub_request(:get, ferb_api_url(FerbRoutes.get_screening_path(screening.id)))
         .and_return(json_body('Screening is not found!!', status: 404))
       stub_empty_relationships
       stub_empty_history_for_screening(screening)
@@ -58,7 +58,7 @@ feature 'error pages' do
 
   context 'when user attempts to access a screening created by another' do
     scenario 'renders 403 page' do
-      stub_request(:get, intake_api_url(ExternalRoutes.intake_api_screening_path(screening.id)))
+      stub_request(:get, ferb_api_url(FerbRoutes.get_screening_path(screening.id)))
         .and_return(json_body('Forbidden!!', status: 403))
       stub_empty_relationships
       stub_empty_history_for_screening(screening)
@@ -89,14 +89,14 @@ feature 'error banner' do
 
     scenario 'hide the error banner after submit action succeeds on second try' do
       stub_request(
-        :get, intake_api_url(ExternalRoutes.intake_api_screening_path(screening.id))
+        :get, ferb_api_url(FerbRoutes.get_screening_path(screening.id))
       ).and_return(json_body(screening.to_json, status: 200))
       stub_empty_relationships
       stub_empty_history_for_screening(screening)
       visit edit_screening_path(id: screening.id)
       stub_request(
         :post,
-        intake_api_url(ExternalRoutes.intake_api_screening_submit_path(screening.id))
+        ferb_api_url(FerbRoutes.get_screening_path(screening.id))
       ).and_return(json_body([].to_json, status: 500))
       visit edit_screening_path(id: screening.id)
       expect(page).to_not have_text(

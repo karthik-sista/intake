@@ -8,7 +8,7 @@ feature 'searching a participant in autocompleter' do
   let(:date_of_birth) { 15.years.ago.to_date }
   before do
     stub_request(
-      :get, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening.id))
+      :get, ferb_api_url(FerbRoutes.get_screening_path(existing_screening.id))
     ).and_return(json_body(existing_screening.to_json, status: 200))
     stub_empty_relationships
     stub_empty_history_for_screening(existing_screening)
@@ -423,14 +423,14 @@ feature 'searching a participant in autocompleter' do
       )
       stub_empty_history_for_screening(new_screening)
       stub_empty_relationships
-      stub_request(:post, intake_api_url(ExternalRoutes.intake_api_screenings_path))
+      stub_request(:post, ferb_api_url(FerbRoutes.create_screening_path))
         .with(body: as_json_without_root_id(new_screening))
         .and_return(json_body(new_screening.to_json, status: 201))
 
       stub_request(:get, ferb_api_url(FerbRoutes.screenings_path))
         .and_return(json_body([].to_json, status: 200))
 
-      stub_request(:get, intake_api_url(ExternalRoutes.intake_api_screening_path(new_screening.id)))
+      stub_request(:get, ferb_api_url(FerbRoutes.get_screening_path(new_screening.id)))
         .and_return(json_body(new_screening.to_json, status: 200))
 
       visit root_path
@@ -448,7 +448,7 @@ feature 'searching a participant in autocompleter' do
 
       stub_empty_history_for_screening(new_screening)
       stub_empty_relationships
-      stub_request(:get, intake_api_url(ExternalRoutes.intake_api_screening_path(new_screening.id)))
+      stub_request(:get, ferb_api_url(FerbRoutes.get_screening_path(new_screening.id)))
         .and_return(json_body(new_screening.to_json, status: 200))
 
       page.go_forward

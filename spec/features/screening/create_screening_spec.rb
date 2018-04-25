@@ -46,7 +46,7 @@ feature 'Create Screening' do
 
         stub_empty_history_for_screening(new_screening)
         stub_empty_relationships
-        stub_request(:post, intake_api_url(ExternalRoutes.intake_api_screenings_path))
+        stub_request(:post, ferb_api_url(FerbRoutes.create_screening_path))
           .with(body: as_json_without_root_id(new_screening))
           .and_return(json_body(new_screening.to_json, status: 201))
 
@@ -54,7 +54,7 @@ feature 'Create Screening' do
           .and_return(json_body([].to_json, status: 200))
 
         stub_request(
-          :get, intake_api_url(ExternalRoutes.intake_api_screening_path(new_screening.id))
+          :get, ferb_api_url(FerbRoutes.get_screening_path(new_screening.id))
         ).and_return(json_body(new_screening.to_json, status: 200))
 
         stub_request(:get, auth_validation_url)
@@ -108,7 +108,7 @@ feature 'Create Screening' do
 
         stub_empty_history_for_screening(new_screening)
         stub_empty_relationships
-        stub_request(:post, intake_api_url(ExternalRoutes.intake_api_screenings_path))
+        stub_request(:post, ferb_api_url(FerbRoutes.create_screening_path))
           .with(body: as_json_without_root_id(new_screening))
           .and_return(json_body(new_screening.to_json, status: 201))
 
@@ -116,7 +116,7 @@ feature 'Create Screening' do
           .and_return(json_body([].to_json, status: 200))
 
         stub_request(
-          :get, intake_api_url(ExternalRoutes.intake_api_screening_path(new_screening.id))
+          :get, ferb_api_url(FerbRoutes.get_screening_path(new_screening.id))
         ).and_return(json_body(new_screening.to_json, status: 200))
 
         stub_request(:get, auth_validation_url)
@@ -167,7 +167,7 @@ feature 'Create Screening' do
         )
         stub_empty_history_for_screening(new_screening)
         stub_empty_relationships
-        stub_request(:post, intake_api_url(ExternalRoutes.intake_api_screenings_path))
+        stub_request(:post, ferb_api_url(FerbRoutes.create_screening_path))
           .with(body: as_json_without_root_id(new_screening))
           .and_return(json_body(new_screening.to_json, status: 201))
 
@@ -175,7 +175,7 @@ feature 'Create Screening' do
           .and_return(json_body([].to_json, status: 200))
 
         stub_request(
-          :get, intake_api_url(ExternalRoutes.intake_api_screening_path(new_screening.id))
+          :get, ferb_api_url(FerbRoutes.get_screening_path(new_screening.id))
         ).and_return(json_body(new_screening.to_json, status: 200))
         stub_request(:get, auth_validation_url)
           .and_return(json_body(auth_details.to_json, status: 200))
@@ -212,7 +212,7 @@ feature 'Create Screening' do
         )
         stub_empty_history_for_screening(new_screening)
         stub_empty_relationships
-        stub_request(:post, intake_api_url(ExternalRoutes.intake_api_screenings_path))
+        stub_request(:post, ferb_api_url(FerbRoutes.create_screening_path))
           .with(body: as_json_without_root_id(new_screening))
           .and_return(json_body(new_screening.to_json, status: 201))
 
@@ -220,7 +220,7 @@ feature 'Create Screening' do
           .and_return(json_body([].to_json, status: 200))
 
         stub_request(
-          :get, intake_api_url(ExternalRoutes.intake_api_screening_path(new_screening.id))
+          :get, ferb_api_url(FerbRoutes.get_screening_path(new_screening.id))
         ).and_return(json_body(new_screening.to_json, status: 200))
 
         stub_request(:get, auth_validation_url)
@@ -251,14 +251,14 @@ feature 'Create Screening' do
     )
     stub_empty_history_for_screening(new_screening)
     stub_empty_relationships
-    stub_request(:post, intake_api_url(ExternalRoutes.intake_api_screenings_path))
+    stub_request(:post, ferb_api_url(FerbRoutes.create_screening_path))
       .with(body: as_json_without_root_id(new_screening))
       .and_return(json_body(new_screening.to_json, status: 201))
 
     stub_request(:get, ferb_api_url(FerbRoutes.screenings_path))
       .and_return(json_body([].to_json, status: 200))
 
-    stub_request(:get, intake_api_url(ExternalRoutes.intake_api_screening_path(new_screening.id)))
+    stub_request(:get, ferb_api_url(FerbRoutes.get_screening_path(new_screening.id)))
       .and_return(json_body(new_screening.to_json, status: 200))
 
     visit root_path
@@ -266,7 +266,7 @@ feature 'Create Screening' do
 
     expect(
       a_request(
-        :post, intake_api_url(ExternalRoutes.intake_api_screenings_path)
+        :post, ferb_api_url(FerbRoutes.create_screening_path)
       ).with(body: as_json_without_root_id(new_screening))
     ).to have_been_made
 

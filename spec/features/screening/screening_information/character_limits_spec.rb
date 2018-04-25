@@ -9,7 +9,7 @@ feature 'screening information card' do
   let(:character_buffet) { 'C am-r\'o’n1234567890!@#$%^&*(),./;"[]' }
 
   scenario 'character limitations by field' do
-    stub_request(:get, intake_api_url(ExternalRoutes.intake_api_screening_path(screening.id)))
+    stub_request(:get, ferb_api_url(FerbRoutes.get_screening_path(screening.id)))
       .and_return(json_body(screening.to_json, status: 200))
     stub_empty_relationships
     stub_empty_history_for_screening(screening)

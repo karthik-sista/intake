@@ -133,8 +133,8 @@ feature 'Relationship card' do
   context 'a screening with participants' do
     before do
       stub_request(:get,
-        intake_api_url(
-          ExternalRoutes.intake_api_screening_path(participants_screening.id)
+        ferb_api_url(
+          FerbRoutes.get_screening_path(participants_screening.id)
         )).and_return(json_body(participants_screening.to_json))
       stub_empty_history_for_screening(participants_screening)
 

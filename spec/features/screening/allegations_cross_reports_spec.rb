@@ -33,7 +33,7 @@ feature 'show cross reports' do
         )
       ]
     )
-    stub_request(:get, intake_api_url(ExternalRoutes.intake_api_screening_path(screening.id)))
+    stub_request(:get, ferb_api_url(FerbRoutes.get_screening_path(screening.id)))
       .and_return(json_body(screening.to_json, status: 200))
     stub_empty_history_for_screening(screening)
     stub_empty_relationships
@@ -98,7 +98,7 @@ feature 'show cross reports' do
         )
       ]
     )
-    stub_request(:get, intake_api_url(ExternalRoutes.intake_api_screening_path(screening.id)))
+    stub_request(:get, ferb_api_url(FerbRoutes.get_screening_path(screening.id)))
       .and_return(json_body(screening.to_json, status: 200))
     stub_empty_history_for_screening(screening)
     stub_empty_relationships
@@ -149,7 +149,7 @@ feature 'show cross reports' do
       cross_reports: []
     )
     stub_county_agencies('c41')
-    stub_request(:get, intake_api_url(ExternalRoutes.intake_api_screening_path(screening.id)))
+    stub_request(:get, ferb_api_url(FerbRoutes.get_screening_path(screening.id)))
       .and_return(json_body(screening.to_json, status: 200))
     stub_empty_history_for_screening(screening)
     stub_empty_relationships
@@ -173,7 +173,7 @@ feature 'show cross reports' do
         { type: 'LAW_ENFORCEMENT', id: 'BMG2f3J75C' }
       ]
     }
-    stub_request(:put, intake_api_url(ExternalRoutes.intake_api_screening_path(screening.id)))
+    stub_request(:put, ferb_api_url(FerbRoutes.update_screening_path(screening.id)))
       .and_return(json_body(screening.to_json, status: 200))
     within '#cross-report-card.edit' do
       click_button 'Save'

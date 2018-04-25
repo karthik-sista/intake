@@ -83,8 +83,8 @@ feature 'worker safety card' do
     existing_screening.safety_information = 'Something else'
     existing_screening.safety_alerts = ['Dangerous Environment', 'Firearms in Home']
     stub_request(
-      :put, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening.id))
-    ).with(json_body(as_json_without_root_id(existing_screening)))
+      :put, ferb_api_url(FerbRoutes.update_screening_path(existing_screening.id))
+    ).with(json_body(existing_screening.as_json))
       .and_return(json_body(existing_screening.to_json))
 
     within '#worker-safety-card.edit' do
@@ -93,8 +93,8 @@ feature 'worker safety card' do
 
     expect(
       a_request(
-        :put, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening.id))
-      ).with(json_body(as_json_without_root_id(existing_screening)))
+        :put, ferb_api_url(FerbRoutes.update_screening_path(existing_screening.id))
+      ).with(json_body(existing_screening.as_json))
     ).to have_been_made
 
     within '#worker-safety-card.show' do
@@ -126,8 +126,8 @@ feature 'worker safety card' do
     existing_screening.safety_information = 'Something else'
     existing_screening.safety_alerts = ['Dangerous Environment', 'Firearms in Home']
     stub_request(
-      :put, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening.id))
-    ).with(json_body(as_json_without_root_id(existing_screening)))
+      :put, ferb_api_url(FerbRoutes.update_screening_path(existing_screening.id))
+    ).with(json_body(existing_screening.as_json))
       .and_return(json_body(existing_screening.to_json))
 
     within '#worker-safety-card.edit' do
@@ -136,8 +136,8 @@ feature 'worker safety card' do
 
     expect(
       a_request(
-        :put, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening.id))
-      ).with(json_body(as_json_without_root_id(existing_screening)))
+        :put, ferb_api_url(FerbRoutes.update_screening_path(existing_screening.id))
+      ).with(json_body(existing_screening.as_json))
     ).to have_been_made
 
     within '#worker-safety-card.show' do

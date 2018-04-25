@@ -30,7 +30,7 @@ feature 'API call' do
       redirect_url = CGI.escape("#{page.current_url.chomp('/')}#{screening_path(screening.id)}")
       login_url = "#{auth_login_url}#{redirect_url}"
 
-      stub_request(:get, intake_api_url(ExternalRoutes.intake_api_screening_path(screening.id)))
+      stub_request(:get, ferb_api_url(FerbRoutes.get_screening_path(screening.id)))
         .and_return(json_body('I failed', status: 401))
       visit screening_path(id: screening.id, params: { bar: 'foo' })
 

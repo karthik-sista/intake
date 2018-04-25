@@ -8,7 +8,7 @@ module WebmockHelpers
     with_updated_attributes: {}
   )
     screening.assign_attributes(with_updated_attributes)
-    stub_request(:put, intake_api_url(ExternalRoutes.intake_api_screening_path(screening.id)))
+    stub_request(:put, ferb_api_url(FerbRoutes.update_screening_path(screening.id)))
       .and_return(json_body(screening.to_json))
   end
 

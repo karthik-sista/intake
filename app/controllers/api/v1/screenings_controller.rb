@@ -43,13 +43,6 @@ module Api
       ].freeze
 
       def create
-        new_screening = Screening.new(
-          reference: LUID.generate.first,
-          assignee: build_assignee_name(session),
-          assignee_staff_id: build_staff_id(session),
-          incident_county: build_incident_county(session),
-          indexable: true
-        )
         screening = ScreeningRepository.create(session[:security_token], new_screening)
         render json: screening
       end
@@ -112,6 +105,21 @@ module Api
           ("- #{user_details.county}" if user_details.county)
         ]
         assignee_details.join(' ').gsub(/\s+/, ' ').strip
+      end
+
+      def new_screening
+        {
+          reference: LUID.generate.first,
+          assignee: build_assignee_name(session),
+          assignee_staff_id: build_staff_id(session),
+          incident_county: build_incident_county(session),
+          indexable: true
+        }.merge(empty_screening_fields)
+      end
+
+      def empty_screening_fields
+        { addresses: [], cross_reports: [], participants: [],
+          allegations: [], incident_address: {} }
       end
     end
   end

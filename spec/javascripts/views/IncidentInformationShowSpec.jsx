@@ -19,7 +19,7 @@ describe('IncidentInformationShow', () => {
   it('renders the street address', () => {
     const component = renderIncidentInformationShow({
       address: {
-        streetAddress: '1500 7th St',
+        street_address: '1500 7th St',
       },
     })
     expect(component.find('ShowField[label="Address"]').html())

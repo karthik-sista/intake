@@ -19,12 +19,12 @@ export const getIncidentCountySelector = createSelector(
 
 export const getAddressSelector = createSelector(
   getIncidentInformationFormSelector,
-  (store) => store.getIn(['incidentInformationForm', 'address', 'state', 'value']),
+  (store) => store.getIn(['incidentInformationForm', 'incident_address', 'state', 'value']),
   (incidentInformationForm, usState) => fromJS({
-    city: incidentInformationForm.getIn(['address', 'city', 'value'], '') || '',
-    streetAddress: incidentInformationForm.getIn(['address', 'street_address', 'value'], '') || '',
+    city: incidentInformationForm.getIn(['incident_address', 'city', 'value'], '') || '',
+    street_address: incidentInformationForm.getIn(['incident_address', 'street_address', 'value'], '') || '',
     state: usState,
-    zip: incidentInformationForm.getIn(['address', 'zip', 'value'], '') || '',
+    zip: incidentInformationForm.getIn(['incident_address', 'zip', 'value'], '') || '',
   })
 )
 
@@ -42,7 +42,7 @@ export const getScreeningWithEditsSelector = createSelector(
   (screening, incidentDate, incidentCounty, address, locationType) => (
     screening.set('incident_date', incidentDate)
       .set('incident_county', incidentCounty)
-      .set('address', (screening.get('address') || Map()).map((value, key) => (address.get(key) || null)))
+      .set('incident_address', address)
       .set('location_type', locationType)
   )
 )

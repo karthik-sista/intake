@@ -16,14 +16,14 @@ export default createReducer(Map(), {
     const {
       incident_date,
       incident_county,
-      address: {street_address, city, state: usState, zip},
+      incident_address: {street_address, city, state: usState, zip},
       location_type,
     } = screening
 
     return fromJS({
       incident_date: untouched(incident_date),
       incident_county: untouched(incident_county),
-      address: {
+      incident_address: {
         city: untouched(city),
         state: untouched(usState),
         street_address: untouched(street_address),
@@ -38,10 +38,10 @@ export default createReducer(Map(), {
   [TOUCH_ALL_INCIDENT_INFORMATION_FORM_FIELDS](state) {
     return state.setIn(['incident_date', 'touched'], true)
       .setIn(['incident_county', 'touched'], true)
-      .setIn(['address', 'street_address', 'touched'], true)
-      .setIn(['address', 'city', 'touched'], true)
-      .setIn(['address', 'state', 'touched'], true)
-      .setIn(['address', 'zip', 'touched'], true)
+      .setIn(['incident_address', 'street_address', 'touched'], true)
+      .setIn(['incident_address', 'city', 'touched'], true)
+      .setIn(['incident_address', 'state', 'touched'], true)
+      .setIn(['incident_address', 'zip', 'touched'], true)
       .setIn(['location_type', 'touched'], true)
   },
   [TOUCH_INCIDENT_INFORMATION_FORM_FIELD](state, {payload: {field}}) {
@@ -51,15 +51,15 @@ export default createReducer(Map(), {
     const {
       incident_date,
       incident_county,
-      address: {street_address, city, state: usState, zip},
+      incident_address: {street_address, city, state: usState, zip},
       location_type,
     } = screening
     return state.setIn(['incident_date', 'value'], incident_date)
       .setIn(['incident_county', 'value'], incident_county)
-      .setIn(['address', 'street_address', 'value'], street_address)
-      .setIn(['address', 'city', 'value'], city)
-      .setIn(['address', 'state', 'value'], usState)
-      .setIn(['address', 'zip', 'value'], zip)
+      .setIn(['incident_address', 'street_address', 'value'], street_address)
+      .setIn(['incident_address', 'city', 'value'], city)
+      .setIn(['incident_address', 'state', 'value'], usState)
+      .setIn(['incident_address', 'zip', 'value'], zip)
       .setIn(['location_type', 'value'], location_type)
   },
 })

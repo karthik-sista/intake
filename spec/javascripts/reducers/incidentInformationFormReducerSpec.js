@@ -33,7 +33,8 @@ describe('incidentInformationFormReducer', () => {
       const screening = {
         incident_date: 'new incident date',
         incident_county: 'new incident county',
-        address: {
+        incident_address: {
+          id: '1',
           city: 'new city',
           state: 'new state',
           street_address: 'new street address',
@@ -52,7 +53,8 @@ describe('incidentInformationFormReducer', () => {
           value: 'new incident county',
           touched: false,
         },
-        address: {
+        incident_address: {
+          id: '1',
           city: {
             value: 'new city',
             touched: false,
@@ -111,7 +113,7 @@ describe('incidentInformationFormReducer', () => {
         incident_county: {
           touched: true,
         },
-        address: {
+        incident_address: {
           street_address: {
             touched: true,
           },
@@ -155,7 +157,8 @@ describe('incidentInformationFormReducer', () => {
         incident_county: {
           value: 'new county',
         },
-        address: {
+        incident_address: {
+          id: '1',
           street_address: {
             value: 'new street address',
           },
@@ -176,7 +179,8 @@ describe('incidentInformationFormReducer', () => {
       const screening = {
         incident_date: 'old date',
         incident_county: 'old county',
-        address: {
+        incident_address: {
+          id: '1',
           street_address: 'old street address',
           city: 'old city',
           state: 'old state',
@@ -193,7 +197,8 @@ describe('incidentInformationFormReducer', () => {
         incident_county: {
           value: 'old county',
         },
-        address: {
+        incident_address: {
+          id: '1',
           street_address: {
             value: 'old street address',
           },

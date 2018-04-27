@@ -51,7 +51,7 @@ describe('incidentInformationFormSelectors', () => {
   describe('getAddressSelector', () => {
     it('return address properties or an object with empty string if there is no address', () => {
       const incidentInformationForm = {
-        address: {
+        incident_address: {
           city: {
             value: 'Sacramento',
           },
@@ -69,13 +69,13 @@ describe('incidentInformationFormSelectors', () => {
       const state = fromJS({incidentInformationForm})
       expect(getAddressSelector(state)).toEqualImmutable(fromJS({
         city: 'Sacramento',
-        streetAddress: '1234 C Street',
+        street_address: '1234 C Street',
         state: 'CA',
         zip: '98765',
       }))
       expect(getAddressSelector(emptyState)).toEqualImmutable(fromJS({
         city: '',
-        streetAddress: '',
+        street_address: '',
         state: undefined,
         zip: '',
       }))
@@ -100,7 +100,7 @@ describe('incidentInformationFormSelectors', () => {
       const screening = {
         incident_date: '1/2/2009',
         incident_county: 'old county',
-        address: {
+        incident_address: {
           street_address: 'old address',
           city: 'old city',
           state: 'old state',
@@ -115,7 +115,7 @@ describe('incidentInformationFormSelectors', () => {
         incident_county: {
           value: 'new county',
         },
-        address: {
+        incident_address: {
           street_address: {
             value: 'new address',
           },
@@ -137,7 +137,7 @@ describe('incidentInformationFormSelectors', () => {
       expect(getScreeningWithEditsSelector(state)).toEqualImmutable(fromJS({
         incident_date: '1/3/2009',
         incident_county: 'new county',
-        address: {
+        incident_address: {
           street_address: 'new address',
           city: 'new city',
           state: 'new state',
@@ -151,7 +151,7 @@ describe('incidentInformationFormSelectors', () => {
       const screening = {
         incident_date: '1/2/2009',
         incident_county: 'old county',
-        address: null,
+        incident_address: null,
         location_type: 'old location type',
       }
       const incidentInformationForm = {
@@ -161,7 +161,7 @@ describe('incidentInformationFormSelectors', () => {
         incident_county: {
           value: 'new county',
         },
-        address: null,
+        incident_address: null,
         location_type: {
           value: 'new location type',
         },

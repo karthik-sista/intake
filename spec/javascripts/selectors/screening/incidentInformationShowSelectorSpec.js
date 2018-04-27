@@ -46,7 +46,7 @@ describe('incidentInformationShowSelectors', () => {
   describe('getAddressSelector', () => {
     it('return address properties or an object with empty string if there is no address', () => {
       const screening = {
-        address: {
+        incident_address: {
           city: 'Sacramento',
           street_address: '1234 C Street',
           state: 'CA',
@@ -56,13 +56,13 @@ describe('incidentInformationShowSelectors', () => {
       const state = fromJS({screening})
       expect(getAddressSelector(state)).toEqualImmutable(fromJS({
         city: 'Sacramento',
-        streetAddress: '1234 C Street',
+        street_address: '1234 C Street',
         state: 'California',
         zip: '98765',
       }))
       expect(getAddressSelector(emptyState)).toEqualImmutable(Map({
         city: '',
-        streetAddress: '',
+        street_address: '',
         state: '',
         zip: '',
       }))

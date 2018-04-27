@@ -20,12 +20,12 @@ export const getIncidentCountySelector = createSelector(
 
 export const getAddressSelector = createSelector(
   getScreeningSelector,
-  (store) => US_STATE.find((usState) => usState.code === store.getIn(['screening', 'address', 'state'])),
+  (store) => US_STATE.find((usState) => usState.code === store.getIn(['screening', 'incident_address', 'state'])),
   (screening, usState) => Map({
-    city: screening.getIn(['address', 'city'], '') || '',
-    streetAddress: screening.getIn(['address', 'street_address'], '') || '',
+    city: screening.getIn(['incident_address', 'city'], '') || '',
+    street_address: screening.getIn(['incident_address', 'street_address'], '') || '',
     state: usState ? usState.name : '',
-    zip: screening.getIn(['address', 'zip'], '') || '',
+    zip: screening.getIn(['incident_address', 'zip'], '') || '',
   })
 )
 

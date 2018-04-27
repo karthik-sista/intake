@@ -48,7 +48,7 @@ describe('IncidentInformationForm', () => {
       it('renders the street address field and its callbacks', () => {
         const component = renderIncidentInformationForm({
           address: {
-            streetAddress: '1234 C street',
+            street_address: '1234 C street',
           },
         })
         expect(component.find('InputField[label="Address"]').props().value).toEqual('1234 C street')
@@ -58,7 +58,7 @@ describe('IncidentInformationForm', () => {
         const onChange = jasmine.createSpy('onChange')
         const component = renderIncidentInformationForm({onChange})
         component.find('InputField[label="Address"]').simulate('change', {target: {value: 'new value'}})
-        expect(onChange).toHaveBeenCalledWith(['address', 'street_address'], 'new value')
+        expect(onChange).toHaveBeenCalledWith(['incident_address', 'street_address'], 'new value')
       })
     })
 
@@ -76,7 +76,7 @@ describe('IncidentInformationForm', () => {
         const onChange = jasmine.createSpy('onChange')
         const component = renderIncidentInformationForm({onChange})
         component.find('InputField[label="City"]').simulate('change', {target: {value: 'new value'}})
-        expect(onChange).toHaveBeenCalledWith(['address', 'city'], 'new value')
+        expect(onChange).toHaveBeenCalledWith(['incident_address', 'city'], 'new value')
       })
     })
 
@@ -138,7 +138,7 @@ describe('IncidentInformationForm', () => {
         const onChange = jasmine.createSpy('onChange')
         const component = renderIncidentInformationForm({onChange})
         component.find('SelectField[label="State"]').simulate('change', {target: {value: 'new value'}})
-        expect(onChange).toHaveBeenCalledWith(['address', 'state'], 'new value')
+        expect(onChange).toHaveBeenCalledWith(['incident_address', 'state'], 'new value')
       })
     })
 
@@ -156,7 +156,7 @@ describe('IncidentInformationForm', () => {
         const onChange = jasmine.createSpy('onChange')
         const component = renderIncidentInformationForm({onChange})
         component.find('InputField[label="Zip"]').simulate('change', {target: {value: 'new value'}})
-        expect(onChange).toHaveBeenCalledWith(['address', 'zip'], 'new value')
+        expect(onChange).toHaveBeenCalledWith(['incident_address', 'zip'], 'new value')
       })
     })
   })

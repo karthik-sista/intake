@@ -31,7 +31,7 @@ module Api
           :method,
           agencies: %i[id type]
         ],
-        address: %i[id city state street_address zip legacy_descriptor],
+        incident_address: %i[id city state street_address zip legacy_descriptor],
         allegations: [
           :id,
           :screening_id,

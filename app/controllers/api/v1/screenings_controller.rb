@@ -48,8 +48,7 @@ module Api
       end
 
       def update
-        existing_screening = Screening.new(screening_params.to_h)
-        updated_screening = ScreeningRepository.update(session[:security_token], existing_screening)
+        updated_screening = ScreeningRepository.update(session[:security_token], screening_params)
         render json: updated_screening
       end
 
@@ -77,7 +76,7 @@ module Api
       private
 
       def screening_params
-        params.require(:screening).permit(*PERMITTED_PARAMS)
+        params.require(:screening).permit(*PERMITTED_PARAMS).to_h
       end
 
       def build_incident_county(session)

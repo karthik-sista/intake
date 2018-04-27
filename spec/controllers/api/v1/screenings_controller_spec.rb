@@ -19,10 +19,6 @@ describe Api::V1::ScreeningsController do
       end
       it 'defaults indexable to true' do
         screening_params = { indexable: false }
-        expect(Screening).to receive(:new)
-          .with(
-            hash_including(indexable: true)
-          ).and_call_original
         allow(ScreeningRepository).to receive(:create)
         process :create, method: :post, session: session, params: screening_params
       end
@@ -30,93 +26,150 @@ describe Api::V1::ScreeningsController do
   end
 
   describe '#create' do
-    let(:created_screening) { double(:screening, id: '1') }
-    let(:blank_screening) { double(:screening) }
+    let(:created_screening) do
+      {
+        reference: "123ABC",
+        assignee: "#{staff.first_name} #{staff.last_name} - #{staff.county}",
+        assignee_staff_id: staff.staff_id.to_s,
+        incident_county: nil,
+        indexable: true,
+        addresses: [],
+        cross_reports: [],
+        participants: [],
+        allegations: []
+      }
+    end
+
+    let(:blank_screening) do
+      {
+        reference: "123ABC",
+        indexable: true,
+        addresses: [],
+        cross_reports: [],
+        participants: [],
+        allegations: []
+      }
+    end
     before do
       allow(LUID).to receive(:generate).and_return(['123ABC'])
       expect(ScreeningRepository).to receive(:create)
-        .with(security_token, blank_screening)
+        .with(security_token, created_screening)
         .and_return(created_screening)
     end
 
     it 'creates and renders screening as json' do
-      assignee = "#{staff.first_name} #{staff.last_name} - #{staff.county}"
-      expect(Screening).to receive(:new)
-        .with(reference: '123ABC',
-              assignee: assignee,
-              assignee_staff_id: '123',
-              incident_county: nil,
-              indexable: true)
-        .and_return(blank_screening)
-
       process :create, method: :post, session: session
       expect(response).to be_successful
       expect(JSON.parse(response.body)).to eq(created_screening.as_json)
     end
 
-    describe 'setting assignee' do
-      it 'leaves assignee and assignee_staff_id as nil if user_details is not set' do
+    describe 'setting assignee when user_details are not set' do
+      let(:created_screening) do
+        {
+          reference: "123ABC",
+          assignee: nil,
+          assignee_staff_id: nil,
+          incident_county: nil,
+          indexable: true,
+          addresses: [],
+          cross_reports: [],
+          participants: [],
+          allegations: []
+        }
+      end
+
+      it 'leaves assignee and assignee_staff_id as nil' do
         session = { 'security_token' => security_token }
-        expect(Screening).to receive(:new)
-          .with(reference: '123ABC',
-                assignee: nil,
-                assignee_staff_id: nil,
-                incident_county: nil,
-                indexable: true)
-          .and_return(blank_screening)
         process :create, method: :post, session: session
         expect(response).to be_successful
+      end
+    end
+
+    describe 'setting assignee when user details is empty' do
+      let(:created_screening) do
+        {
+          reference: "123ABC",
+          assignee: '',
+          assignee_staff_id: nil,
+          incident_county: nil,
+          indexable: true,
+          addresses: [],
+          cross_reports: [],
+          participants: [],
+          allegations: []
+        }
       end
 
       it 'is blank if user_details is empty' do
         staff = FactoryBot.build(:staff, first_name: nil, last_name: nil, county: nil)
         session = { 'security_token' => security_token, 'user_details' => staff }
-        expect(Screening).to receive(:new)
-          .with(
-            reference: '123ABC',
-            assignee: '',
-            assignee_staff_id: nil,
-            incident_county: nil,
-            indexable: true
-          )
-          .and_return(blank_screening)
         process :create, method: :post, session: session
         expect(response).to be_successful
       end
+    end
 
-      describe 'when user_details is set' do
+    describe 'setting assignee when user_details is set' do
+      let(:created_screening) do
+        {
+          reference: "123ABC",
+          assignee: "#{staff.first_name} Q. #{staff.last_name} - #{staff.county}",
+          assignee_staff_id: staff.staff_id.to_s,
+          incident_county: nil,
+          indexable: true,
+          addresses: [],
+          cross_reports: [],
+          participants: [],
+          allegations: []
+        }
+      end
+
+      describe 'with first middle and last name set' do
+        let(:staff) { FactoryBot.build(:staff, middle_initial: 'Q', staff_id: '456') }
+        let(:created_screening) do
+          {
+            reference: "123ABC",
+            assignee: "#{staff.first_name} Q. #{staff.last_name} - #{staff.county}",
+            assignee_staff_id: staff.staff_id.to_s,
+            incident_county: nil,
+            indexable: true,
+            addresses: [],
+            cross_reports: [],
+            participants: [],
+            allegations: []
+          }
+        end
+
         it 'formats assignee as first mi. last - county if all exist' do
-          staff = FactoryBot.build(:staff, middle_initial: 'Q', staff_id: '456')
-          assignee = "#{staff.first_name} Q. #{staff.last_name} - #{staff.county}"
           session = {
             'security_token' => security_token,
             'user_details' => staff
           }
-          expect(Screening).to receive(:new)
-            .with(reference: '123ABC',
-                  assignee: assignee,
-                  assignee_staff_id: '456',
-                  incident_county: nil,
-                  indexable: true)
-            .and_return(blank_screening)
           process :create, method: :post, session: session
           expect(response).to be_successful
         end
+      end
+
+      describe 'with first last and no middle initial set' do
+        let(:staff) { FactoryBot.build(:staff, staff_id: '456') }
+        let(:created_screening) do
+          {
+            reference: "123ABC",
+            assignee: "#{staff.first_name} #{staff.last_name} - #{staff.county}",
+            assignee_staff_id: staff.staff_id.to_s,
+            incident_county: nil,
+            indexable: true,
+            addresses: [],
+            cross_reports: [],
+            participants: [],
+            allegations: []
+          }
+        end
 
         it 'formats assignee as first last - county if no middle initial' do
-          staff = FactoryBot.build(:staff, staff_id: '789')
-          assignee = "#{staff.first_name} #{staff.last_name} - #{staff.county}"
           session = {
             'security_token' => security_token,
             'user_details' => staff
           }
-          expect(Screening).to receive(:new)
-            .with(reference: '123ABC',
-                  assignee: assignee,
-                  assignee_staff_id: '789',
-                  incident_county: nil,
-                  indexable: true)
-            .and_return(blank_screening)
           process :create, method: :post, session: session
           expect(response).to be_successful
         end
@@ -124,89 +177,94 @@ describe Api::V1::ScreeningsController do
         it 'returns the same name if run more than once' do
           # Added second expectation as in the before so both create calls are properly expected
           expect(ScreeningRepository).to receive(:create)
-            .with(security_token, blank_screening)
+            .with(security_token, created_screening)
             .and_return(created_screening)
-          staff = FactoryBot.build(:staff, staff_id: '789')
-          assignee = "#{staff.first_name} #{staff.last_name} - #{staff.county}"
           session = {
             'security_token' => security_token,
             'user_details' => staff
           }
-          expect(Screening).to receive(:new)
-            .with(reference: '123ABC',
-                  assignee: assignee,
-                  assignee_staff_id: '789',
-                  incident_county: nil,
-                  indexable: true)
-            .and_return(blank_screening)
           process :create, method: :post, session: session
-          expect(Screening).to receive(:new)
-            .with(reference: '123ABC',
-                  assignee: assignee,
-                  assignee_staff_id: '789',
-                  incident_county: nil,
-                  indexable: true)
-            .and_return(blank_screening)
           process :create, method: :post, session: session
         end
       end
     end
 
     describe 'setting incident county' do
-      it 'leaves incident county as nil if user_details is not set' do
-        session = { 'security_token' => security_token }
-        expect(Screening).to receive(:new)
-          .with(
-            reference: '123ABC',
+      describe 'user details not set' do
+        let(:created_screening) do
+          {
+            reference: "123ABC",
             assignee: nil,
             assignee_staff_id: nil,
             incident_county: nil,
-            indexable: true
-          )
-          .and_return(blank_screening)
-        process :create, method: :post, session: session
-        expect(response).to be_successful
+            indexable: true,
+            addresses: [],
+            cross_reports: [],
+            participants: [],
+            allegations: []
+          }
+        end
+        let(:session) do
+          { 'security_token' => security_token }
+        end
+
+        it 'leaves incident county as nil if user_details is not set' do
+          process :create, method: :post, session: session
+          expect(response).to be_successful
+        end
       end
 
-      it 'is blank if user_details is empty' do
-        staff = FactoryBot.build(
-          :staff,
-          first_name: nil,
-          last_name: nil,
-          county: nil,
-          county_code: nil
-        )
-        session = { 'security_token' => security_token, 'user_details' => staff }
-        expect(Screening).to receive(:new)
-          .with(
-            reference: '123ABC',
-            assignee: '',
+      describe 'user details is empty' do
+        let(:staff) do
+          FactoryBot.build(
+            :staff,
+            first_name: nil,
+            last_name: nil,
+            county: nil,
+            county_code: nil
+          )
+        end
+        let(:created_screening) do
+          {
+            reference: "123ABC",
+            assignee: "",
             assignee_staff_id: nil,
             incident_county: nil,
-            indexable: true
-          )
-          .and_return(blank_screening)
-        process :create, method: :post, session: session
-        expect(response).to be_successful
+            indexable: true,
+            addresses: [],
+            cross_reports: [],
+            participants: [],
+            allegations: []
+          }
+        end
+        it 'is blank if user_details is empty' do
+          process :create, method: :post, session: session
+          expect(response).to be_successful
+        end
       end
 
-      it 'default to have user info county' do
-        staff = FactoryBot.build(:staff, county: 'yolo', staff_id: '456', county_code: '123')
-        incident_county = '123'
-        assignee = "#{staff.first_name} #{staff.last_name} - #{staff.county}"
-        session = {
-          'security_token' => security_token,
-          'user_details' => staff
-        }
-        expect(Screening).to receive(:new)
-          .with(reference: '123ABC',
-                assignee: assignee,
-                assignee_staff_id: '456',
-                incident_county: incident_county,
-                indexable: true)
-          .and_return(blank_screening)
-        process :create, method: :post, session: session
-        expect(response).to be_successful
+      describe 'user details has info county' do
+        let(:staff) do
+          FactoryBot.build(:staff, county: 'yolo', staff_id: '456', county_code: '123')
+        end
+        let(:created_screening) do
+          {
+            reference: "123ABC",
+            assignee: "#{staff.first_name} #{staff.last_name} - #{staff.county}",
+            assignee_staff_id: '456',
+            incident_county: '123',
+            indexable: true,
+            addresses: [],
+            cross_reports: [],
+            participants: [],
+            allegations: []
+          }
+        end
+
+        it 'default to have user info county' do
+          process :create, method: :post, session: session
+          expect(response).to be_successful
+        end
       end
     end
   end

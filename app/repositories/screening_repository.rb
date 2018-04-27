@@ -8,9 +8,9 @@ class ScreeningRepository
       security_token,
       ExternalRoutes.intake_api_screenings_path,
       :post,
-      screening.as_json.except('id')
+      screening.as_json(except: 'id')
     )
-    Screening.new(response.body)
+    response.body.to_json
   end
 
   def self.find(security_token, id)

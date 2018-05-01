@@ -22,6 +22,7 @@ export const getAddressSelector = createSelector(
   getScreeningSelector,
   (store) => US_STATE.find((usState) => usState.code === store.getIn(['screening', 'incident_address', 'state'])),
   (screening, usState) => Map({
+    id: screening.getIn(['incident_address', 'id']),
     city: screening.getIn(['incident_address', 'city'], '') || '',
     street_address: screening.getIn(['incident_address', 'street_address'], '') || '',
     state: usState ? usState.name : '',

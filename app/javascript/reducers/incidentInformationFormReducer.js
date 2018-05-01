@@ -16,7 +16,7 @@ export default createReducer(Map(), {
     const {
       incident_date,
       incident_county,
-      incident_address: {street_address, city, state: usState, zip},
+      incident_address: {id, street_address, city, state: usState, zip},
       location_type,
     } = screening
 
@@ -24,6 +24,7 @@ export default createReducer(Map(), {
       incident_date: untouched(incident_date),
       incident_county: untouched(incident_county),
       incident_address: {
+        id: id,
         city: untouched(city),
         state: untouched(usState),
         street_address: untouched(street_address),
@@ -51,11 +52,12 @@ export default createReducer(Map(), {
     const {
       incident_date,
       incident_county,
-      incident_address: {street_address, city, state: usState, zip},
+      incident_address: {id, street_address, city, state: usState, zip},
       location_type,
     } = screening
     return state.setIn(['incident_date', 'value'], incident_date)
       .setIn(['incident_county', 'value'], incident_county)
+      .setIn(['incident_address', 'id'], id)
       .setIn(['incident_address', 'street_address', 'value'], street_address)
       .setIn(['incident_address', 'city', 'value'], city)
       .setIn(['incident_address', 'state', 'value'], usState)

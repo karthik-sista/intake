@@ -14,7 +14,7 @@ import moment from 'moment'
 describe('incidentInformationFormSelectors', () => {
   beforeEach(() => jasmine.addMatchers(matchers))
 
-  const emptyState = fromJS({address: {}})
+  const emptyState = fromJS({ incidentInformationForm: {incident_address: {id: '1'}}})
 
   describe('getIncidentDateSelector', () => {
     it('return an incident date or empty string if there is no incident date', () => {
@@ -52,6 +52,7 @@ describe('incidentInformationFormSelectors', () => {
     it('return address properties or an object with empty string if there is no address', () => {
       const incidentInformationForm = {
         incident_address: {
+          id: '1',
           city: {
             value: 'Sacramento',
           },
@@ -68,12 +69,14 @@ describe('incidentInformationFormSelectors', () => {
       }
       const state = fromJS({incidentInformationForm})
       expect(getAddressSelector(state)).toEqualImmutable(fromJS({
+        id: '1',
         city: 'Sacramento',
         street_address: '1234 C Street',
         state: 'CA',
         zip: '98765',
       }))
       expect(getAddressSelector(emptyState)).toEqualImmutable(fromJS({
+        id: '1',
         city: '',
         street_address: '',
         state: undefined,
@@ -101,6 +104,7 @@ describe('incidentInformationFormSelectors', () => {
         incident_date: '1/2/2009',
         incident_county: 'old county',
         incident_address: {
+          id: '1',
           street_address: 'old address',
           city: 'old city',
           state: 'old state',
@@ -116,6 +120,7 @@ describe('incidentInformationFormSelectors', () => {
           value: 'new county',
         },
         incident_address: {
+          id: '1',
           street_address: {
             value: 'new address',
           },
@@ -138,6 +143,7 @@ describe('incidentInformationFormSelectors', () => {
         incident_date: '1/3/2009',
         incident_county: 'new county',
         incident_address: {
+          id: '1',
           street_address: 'new address',
           city: 'new city',
           state: 'new state',

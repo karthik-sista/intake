@@ -13,7 +13,7 @@ import moment from 'moment'
 describe('incidentInformationShowSelectors', () => {
   beforeEach(() => jasmine.addMatchers(matchers))
 
-  const emptyState = fromJS({address: {}})
+  const emptyState = fromJS({screening: { incident_address: {id: '1'}}})
 
   describe('getIncidentDateSelector', () => {
     it('return an incident date or empty string if there is no incident date', () => {
@@ -47,6 +47,7 @@ describe('incidentInformationShowSelectors', () => {
     it('return address properties or an object with empty string if there is no address', () => {
       const screening = {
         incident_address: {
+          id: '1',
           city: 'Sacramento',
           street_address: '1234 C Street',
           state: 'CA',
@@ -55,12 +56,14 @@ describe('incidentInformationShowSelectors', () => {
       }
       const state = fromJS({screening})
       expect(getAddressSelector(state)).toEqualImmutable(fromJS({
+        id: '1',
         city: 'Sacramento',
         street_address: '1234 C Street',
         state: 'California',
         zip: '98765',
       }))
       expect(getAddressSelector(emptyState)).toEqualImmutable(Map({
+        id: '1',
         city: '',
         street_address: '',
         state: '',

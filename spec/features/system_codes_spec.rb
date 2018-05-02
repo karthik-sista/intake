@@ -6,7 +6,7 @@ feature 'System codes' do
   scenario 'system codes are fetch once per page load' do
     stub_request(:get, ferb_api_url(FerbRoutes.screenings_path))
       .and_return(json_body([].to_json, status: 200))
-    stub_request(:post, intake_api_url(ExternalRoutes.intake_api_screenings_path))
+    stub_request(:post, ferb_api_url(FerbRoutes.screenings_path))
       .and_return(json_body([].to_json, status: 200))
     stub_request(:get, ferb_api_url(FerbRoutes.lov_path))
       .and_return(json_body([].to_json, status: 200))

@@ -218,7 +218,7 @@ feature 'Snapshot History of Involvement' do
 
     scenario 'clicking the Start Over button clears history table' do
       second_snapshot = FactoryBot.create(:screening)
-      stub_request(:post, intake_api_url(ExternalRoutes.intake_api_screenings_path))
+      stub_request(:post, ferb_api_url(FerbRoutes.screenings_path))
         .and_return(json_body(second_snapshot.to_json, status: 201))
       within '#history-card.card.show' do
         expect(page).to have_content('Referral')

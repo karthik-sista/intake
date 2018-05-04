@@ -31,15 +31,15 @@ describe ScreeningRepository do
     end
 
     before do
-      expect(IntakeAPI).to receive(:make_api_call)
-        .with(security_token, "/api/v1/screenings/#{screening_id}", :get)
+      expect(FerbAPI).to receive(:make_api_call)
+        .with(security_token, "/intake/screenings/#{screening_id}", :get)
         .and_return(response)
     end
 
     it 'returns the existing screening' do
       existing_screening = described_class.find(security_token, screening_id)
-      expect(existing_screening.id).to eq(screening_id)
-      expect(existing_screening.name).to eq('Existing Screening')
+      expect(existing_screening['id']).to eq(screening_id)
+      expect(existing_screening['name']).to eq('Existing Screening')
     end
   end
 

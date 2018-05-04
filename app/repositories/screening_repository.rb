@@ -14,12 +14,12 @@ class ScreeningRepository
   end
 
   def self.find(security_token, id)
-    response = IntakeAPI.make_api_call(
+    response = FerbAPI.make_api_call(
       security_token,
-      ExternalRoutes.intake_api_screening_path(id),
+      FerbRoutes.intake_screening_path(id),
       :get
     )
-    Screening.new(response.body)
+    response.body.as_json
   end
 
   def self.update(security_token, screening)

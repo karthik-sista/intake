@@ -18,10 +18,19 @@ const getScreening = (state, {payload: {screening}, error}) => {
   }
 }
 
+const fetchScreening = (state, {payload: {screening}, error}) => {
+  if (error) {
+    return state
+  } else {
+    const {incident_address: {street_address, city, state: usState, zip}, ...screeningTail} = screening
+    return fromJS({address: {street_address, city, state: usState, zip}, ...screeningTail, fetch_status: 'FETCHED'})
+  }
+}
+
 export default createReducer(Map(), {
   [FETCH_SCREENING]: (_state, _action) => Map({fetch_status: 'FETCHING'}),
   [CREATE_SCREENING_COMPLETE]: getScreening,
-  [FETCH_SCREENING_COMPLETE]: getScreening,
+  [FETCH_SCREENING_COMPLETE]: fetchScreening,
   [SAVE_SCREENING_COMPLETE]: getScreening,
   [SUBMIT_SCREENING_COMPLETE]: getScreening,
   [CLEAR_SCREENING]: () => Map(),

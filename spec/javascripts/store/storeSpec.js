@@ -73,13 +73,20 @@ describe('Store', () => {
       name: 'Mock screening',
       participants: [{id: '2', legacy_id: '3', screening_id: '1'}],
       allegations: [],
-      address: {},
+      incident_address: {},
     })
     const participants = screening.get('participants')
     const action = fetchScreeningSuccess(screening.toJS())
     store.dispatch(action)
     expect(store.getState().get('screening')).toEqualImmutable(
-      screening.set('fetch_status', 'FETCHED')
+      fromJS({
+        id: '1',
+        name: 'Mock screening',
+        participants: [{id: '2', legacy_id: '3', screening_id: '1'}],
+        allegations: [],
+        address: {street_address: undefined, city: undefined, state: undefined, zip: undefined},
+        fetch_status: 'FETCHED',
+      })
     )
     expect(store.getState().get('participants')).toEqualImmutable(participants)
   })

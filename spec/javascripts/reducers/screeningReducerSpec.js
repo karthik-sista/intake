@@ -45,10 +45,25 @@ describe('screeningReducer', () => {
 
   describe('on FETCH_SCREENING_COMPLETE', () => {
     it('returns the screening from the action on success', () => {
-      const screening = {id: '1'}
+      const screening = {
+        id: '1',
+        incident_date: null,
+        incident_county: null,
+        incident_address: {},
+        location_type: null,
+        allegations: [],
+      }
       const action = fetchScreeningSuccess(screening)
       expect(screeningReducer(Map(), action)).toEqualImmutable(
-        Map({id: '1', fetch_status: 'FETCHED'})
+        fromJS({
+          id: '1',
+          incident_date: null,
+          incident_county: null,
+          address: {street_address: undefined, city: undefined, state: undefined, zip: undefined},
+          location_type: null,
+          allegations: [],
+          fetch_status: 'FETCHED',
+        })
       )
     })
     it('returns the last state on failure', () => {

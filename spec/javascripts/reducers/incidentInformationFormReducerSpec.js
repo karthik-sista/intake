@@ -33,7 +33,7 @@ describe('incidentInformationFormReducer', () => {
       const screening = {
         incident_date: 'new incident date',
         incident_county: 'new incident county',
-        address: {
+        incident_address: {
           city: 'new city',
           state: 'new state',
           street_address: 'new street address',

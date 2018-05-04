@@ -16,7 +16,7 @@ export default createReducer(Map(), {
     const {
       incident_date,
       incident_county,
-      address: {street_address, city, state: usState, zip},
+      incident_address: {street_address, city, state: usState, zip},
       location_type,
     } = screening
 

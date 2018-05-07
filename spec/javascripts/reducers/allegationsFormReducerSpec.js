@@ -18,7 +18,7 @@ describe('narrativeFormReducer', () => {
 
   describe('on FETCH_SCREENING_COMPLETE', () => {
     it('returns the allegations form', () => {
-      const allegations = [{id: '123', victim_id: '1', perpetrator_id: '2', allegation_types: ['General neglect']}]
+      const allegations = [{id: '123', victim_person_id: '1', perpetrator_person_id: '2', types: ['General neglect']}]
       const action = fetchScreeningSuccess({allegations})
       expect(allegationsFormReducer(List(), action)).toEqualImmutable(
         fromJS([

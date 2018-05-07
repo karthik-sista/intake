@@ -18,19 +18,43 @@ const getScreening = (state, {payload: {screening}, error}) => {
   }
 }
 
-const fetchScreening = (state, {payload: {screening}, error}) => {
+const buildFerbAllegations = (allegations) => (
+  fromJS(
+    allegations.map((allegation) => ({
+      id: allegation.id.toString(),
+      victim_id: allegation.victim_person_id.toString(),
+      perpetrator_id: allegation.perpetrator_person_id.toString(),
+      allegation_types: allegation.types,
+    }))
+  )
+)
+
+const getFerbScreening = (state, {payload: {screening}, error}) => {
   if (error) {
     return state
   } else {
-    const {incident_address: {street_address, city, state: usState, zip}, ...screeningTail} = screening
-    return fromJS({address: {street_address, city, state: usState, zip}, ...screeningTail, fetch_status: 'FETCHED'})
+    const {
+      incident_address: {
+        street_address, city, state: usState, zip,
+      },
+      allegations,
+      ...screeningTail
+    } = screening
+    return fromJS({
+      address: {
+        street_address, city, state: usState, zip,
+      },
+      allegations: buildFerbAllegations(allegations).toJS(),
+      ...screeningTail,
+      fetch_status: 'FETCHED',
+    })
   }
 }
 
 export default createReducer(Map(), {
   [FETCH_SCREENING]: (_state, _action) => Map({fetch_status: 'FETCHING'}),
   [CREATE_SCREENING_COMPLETE]: getScreening,
-  [FETCH_SCREENING_COMPLETE]: fetchScreening,
+  [FETCH_SCREENING_COMPLETE]: getFerbScreening,
   [SAVE_SCREENING_COMPLETE]: getScreening,
   [SUBMIT_SCREENING_COMPLETE]: getScreening,
   [CLEAR_SCREENING]: () => Map(),

@@ -10,12 +10,23 @@ import {
 import {createReducer} from 'utils/createReducer'
 import {List, fromJS} from 'immutable'
 
-const buildAllegations = (allegations) => (
+export const buildFerbAllegations = (allegations) => (
   fromJS(
     allegations.map((allegation) => ({
-      id: allegation.id,
-      victimId: allegation.victim_id,
-      perpetratorId: allegation.perpetrator_id,
+      id: allegation.id.toString(),
+      victimId: allegation.victim_person_id.toString(),
+      perpetratorId: allegation.perpetrator_person_id.toString(),
+      allegationTypes: allegation.types,
+    }))
+  )
+)
+
+const buildApiAllegations = (allegations) => (
+  fromJS(
+    allegations.map((allegation) => ({
+      id: allegation.id.toString(),
+      victimId: allegation.victim_id.toString(),
+      perpetratorId: allegation.perpetrator_id.toString(),
       allegationTypes: allegation.allegation_types,
     }))
   )
@@ -27,7 +38,7 @@ export default createReducer(List(), {
       return state
     } else {
       const {allegations} = screening
-      return buildAllegations(allegations)
+      return buildFerbAllegations(allegations)
     }
   },
   [SET_ALLEGATION_TYPES](state, {payload: {victimId, perpetratorId, allegationTypes}}) {
@@ -36,7 +47,7 @@ export default createReducer(List(), {
     )).push(fromJS({id: null, victimId, perpetratorId, allegationTypes}))
   },
   [RESET_ALLEGATIONS_FORM](_state, {payload: {allegations}}) {
-    return buildAllegations(allegations)
+    return buildApiAllegations(allegations)
   },
   [DELETE_PERSON_COMPLETE](state, {payload: {id}, error}) {
     if (error) {

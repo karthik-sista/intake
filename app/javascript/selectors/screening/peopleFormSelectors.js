@@ -6,6 +6,8 @@ import {createSelector} from 'reselect'
 import {fromJS, List, Map} from 'immutable'
 import {ROLE_TYPE_NON_REPORTER, ROLE_TYPE_REPORTER} from 'enums/RoleType'
 import {getSSNErrors} from 'utils/ssnValidator'
+import {getZIPErrors} from 'utils/zipValidator'
+import {zipFormatter} from 'utils/zipFormatter'
 import {isRequiredIfCreate, combineCompact} from 'utils/validator'
 import {getAddressTypes} from 'selectors/systemCodeSelectors'
 import moment from 'moment'
@@ -60,6 +62,7 @@ export const getErrorsSelector = (state, personId) => {
   const person = state.getIn(['peopleForm', personId]) || Map()
   const firstName = person.getIn(['first_name', 'value'])
   const lastName = person.getIn(['last_name', 'value'])
+  const addressesZip = person.getIn(['addresses', 0, 'zip', 'value']) || Map()
   const roles = person.getIn(['roles', 'value'], List())
   const ssn = person.getIn(['ssn', 'value']) || ''
   const ssnWithoutHyphens = ssn.replace(/-|_/g, '')
@@ -68,6 +71,7 @@ export const getErrorsSelector = (state, personId) => {
     last_name: combineCompact(isRequiredIfCreate(lastName, 'Please enter a last name.', () => (roles.includes('Victim') || roles.includes('Collateral')))),
     roles: getRoleErrors(state, personId, roles),
     ssn: getSSNErrors(ssnWithoutHyphens),
+    zip: getZIPErrors(addressesZip),
   })
 }
 
@@ -79,10 +83,11 @@ export const getTouchedFieldsForPersonSelector = (state, personId) => {
 export const getVisibleErrorsSelector = (state, personId) => {
   const touchedFields = getTouchedFieldsForPersonSelector(state, personId)
   const errors = getErrorsSelector(state, personId)
-  return errors.reduce(
+  const result = errors.reduce(
     (filteredErrors, fieldErrors, field) => (
       filteredErrors.set(field, touchedFields.includes(field) ? fieldErrors : List())
     ), Map())
+  return result
 }
 
 export const getNamesRequiredSelector = (state, personId) => {
@@ -128,6 +133,11 @@ export const getSocialSecurityNumberSelector = (state, personId) => (
   })
 )
 
+export const getZipSelector = (state, personId) => (
+  fromJS({
+    errors: getVisibleErrorsSelector(state, personId).get('zip'),
+  })
+)
 const getPhoneNumbers = (person) => person.get('phone_numbers', List()).map((phoneNumber) => Map({
   id: phoneNumber.get('id'),
   number: phoneNumber.getIn(['number', 'value']),
@@ -139,7 +149,7 @@ const getAddresses = (person) => person.get('addresses', List()).map((address) =
   street_address: address.getIn(['street', 'value']),
   city: address.getIn(['city', 'value']),
   state: address.getIn(['state', 'value']),
-  zip: address.getIn(['zip', 'value']),
+  zip: zipFormatter(address.getIn(['zip', 'value'])),
   type: address.getIn(['type', 'value']),
 }))
 

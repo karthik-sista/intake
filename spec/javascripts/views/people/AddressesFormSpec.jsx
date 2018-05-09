@@ -3,8 +3,8 @@ import {shallow} from 'enzyme'
 import AddressesForm from 'views/people/AddressesForm'
 
 describe('AddressForm', () => {
-  const renderAddressesForm = ({addresses = [], addressTypeOptions = [], stateOptions = [], ...options}) => {
-    const props = {addresses, addressTypeOptions, stateOptions, ...options}
+  const renderAddressesForm = ({addresses = [], addressErrors = {}, addressTypeOptions = [], stateOptions = [], ...options}) => {
+    const props = {addresses, addressTypeOptions, addressErrors, stateOptions, ...options}
     return shallow(<AddressesForm {...props} />, {disableLifecycleMethods: true})
   }
 
@@ -121,7 +121,6 @@ describe('AddressForm', () => {
     expect(streetInput.props().value).toEqual('55555')
     expect(streetInput.props().allowCharacters).toEqual(/[0-9-]/)
   })
-
   it('calls onChange when the zip is updated', () => {
     const onChange = jasmine.createSpy('onChange')
     const addresses = [{}]

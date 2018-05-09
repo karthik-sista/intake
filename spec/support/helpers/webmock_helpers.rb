@@ -7,9 +7,10 @@ module WebmockHelpers
     screening,
     with_updated_attributes: {}
   )
-    screening.assign_attributes(with_updated_attributes)
-    stub_request(:put, intake_api_url(ExternalRoutes.intake_api_screening_path(screening.id)))
-      .and_return(json_body(screening.to_json))
+    api_response = screening.merge(with_updated_attributes)
+    api_response.delete(:incident_address)
+    stub_request(:put, intake_api_url(ExternalRoutes.intake_api_screening_path(screening[:id])))
+      .and_return(json_body(api_response.to_json))
   end
 
   def stub_person_find(id:, person_response:)

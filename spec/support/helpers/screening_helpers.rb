@@ -53,24 +53,24 @@ module ScreeningHelpers
   end
 
   def stub_and_visit_edit_screening(screening)
-    stub_request(:get, intake_api_url(ExternalRoutes.intake_api_screening_path(screening.id)))
+    stub_request(:get, ferb_api_url(FerbRoutes.intake_screening_path(screening[:id])))
       .and_return(json_body(screening.to_json, status: 200))
     stub_empty_relationships
     stub_empty_history_for_screening(screening)
 
-    visit edit_screening_path(id: screening.id)
+    visit edit_screening_path(id: screening[:id])
 
     # TODO: remove this once we can consistently have a fresh page for these specs
     page.driver.browser.navigate.refresh
   end
 
   def stub_and_visit_show_screening(screening)
-    stub_request(:get, intake_api_url(ExternalRoutes.intake_api_screening_path(screening.id)))
+    stub_request(:get, ferb_api_url(FerbRoutes.intake_screening_path(screening[:id])))
       .and_return(json_body(screening.to_json, status: 200))
     stub_empty_relationships
     stub_empty_history_for_screening(screening)
 
-    visit screening_path(id: screening.id)
+    visit screening_path(id: screening[:id])
 
     # TODO: remove this once we can consistently have a fresh page for these specs
     page.driver.browser.navigate.refresh

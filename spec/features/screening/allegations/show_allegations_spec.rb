@@ -17,27 +17,35 @@ feature 'show allegations' do
       first_name: 'Homer',
       last_name: 'Simps',
       date_of_birth: nil)
-    screening = FactoryBot.create(
-      :screening,
-      participants: [marge, homer, lisa]
-    )
-    allegation = FactoryBot.create(
-      :allegation,
-      victim_id: lisa.id,
-      perpetrator_id: marge.id,
-      screening_id: screening.id,
-      allegation_types: ['General neglect', 'Severe neglect']
-    )
-    screening.allegations << allegation
+    allegation = {
+      id: '1',
+      victim_person_id: lisa.id,
+      perpetrator_person_id: marge.id,
+      screening_id: '1',
+      types: ['General neglect', 'Severe neglect']
+    }
+    screening = {
+      id: '1',
+      incident_address: {},
+      addresses: [],
+      cross_reports: [],
+      safety_alerts: [],
+      participants: [
+        marge.as_json.symbolize_keys,
+        homer.as_json.symbolize_keys,
+        lisa.as_json.symbolize_keys
+      ],
+      allegations: [allegation]
+    }
 
     stub_empty_relationships
     stub_empty_history_for_screening(screening)
-    stub_request(:get, intake_api_url(ExternalRoutes.intake_api_screening_path(screening.id)))
+    stub_request(:get, ferb_api_url(FerbRoutes.intake_screening_path(screening[:id])))
       .and_return(json_body(screening.to_json, status: 200))
-    stub_request(:put, intake_api_url(ExternalRoutes.intake_api_screening_path(screening.id)))
+    stub_request(:put, intake_api_url(ExternalRoutes.intake_api_screening_path(screening[:id])))
       .and_return(json_body({}.to_json, status: 200))
 
-    visit screening_path(id: screening.id)
+    visit screening_path(id: screening[:id])
 
     within '.card.show', text: 'Allegations' do
       within 'thead' do
@@ -96,14 +104,13 @@ feature 'show allegations' do
       :allegation,
       victim_id: lisa.id,
       perpetrator_id: homer.id,
-      screening_id: screening.id,
+      screening_id: screening[:id],
       allegation_types: ['Exploitation']
     )
-    screening.allegations.push(new_allegation)
 
     expect(
-      a_request(:put, intake_api_url(ExternalRoutes.intake_api_screening_path(screening.id)))
-      .with(json_body(as_json_without_root_id(screening).merge('participants' => [])))
+      a_request(:put, intake_api_url(ExternalRoutes.intake_api_screening_path(screening[:id])))
+      .with(body: hash_including(allegations: array_including(new_allegation.as_json)))
     ).to have_been_made
   end
 
@@ -117,25 +124,33 @@ feature 'show allegations' do
     homer = FactoryBot.create(:participant, :perpetrator,
       first_name: 'Homer',
       last_name: 'Simpson')
-    screening = FactoryBot.create(
-      :screening,
-      participants: [marge, homer, lisa]
-    )
-    allegation = FactoryBot.create(
-      :allegation,
-      victim_id: lisa.id,
-      perpetrator_id: marge.id,
-      screening_id: screening.id,
-      allegation_types: ['General neglect']
-    )
-    screening.allegations << allegation
+    allegation = {
+      id: '1',
+      victim_person_id: lisa.id,
+      perpetrator_person_id: marge.id,
+      screening_id: '1',
+      types: ['General neglect']
+    }
+    screening = {
+      id: '1',
+      incident_address: {},
+      addresses: [],
+      cross_reports: [],
+      safety_alerts: [],
+      participants: [
+        marge.as_json.symbolize_keys,
+        homer.as_json.symbolize_keys,
+        lisa.as_json.symbolize_keys
+      ],
+      allegations: [allegation]
+    }
 
-    stub_request(:get, intake_api_url(ExternalRoutes.intake_api_screening_path(screening.id)))
+    stub_request(:get, ferb_api_url(FerbRoutes.intake_screening_path(screening[:id])))
       .and_return(json_body(screening.to_json, status: 200))
     stub_empty_relationships
     stub_empty_history_for_screening(screening)
 
-    visit screening_path(id: screening.id)
+    visit screening_path(id: screening[:id])
 
     within '.card.show', text: 'Allegations' do
       within 'tbody tr' do
@@ -148,9 +163,9 @@ feature 'show allegations' do
     stub_request(:delete, intake_api_url(ExternalRoutes.intake_api_participant_path(marge.id)))
       .and_return(json_body(nil, status: 204))
 
-    screening.allegations = []
-    screening.participants = [lisa, homer]
-    stub_request(:get, intake_api_url(ExternalRoutes.intake_api_screening_path(screening.id)))
+    screening[:allegations] = []
+    screening[:participants] = [lisa.as_json.symbolize_keys, homer.as_json.symbolize_keys]
+    stub_request(:get, ferb_api_url(FerbRoutes.intake_screening_path(screening[:id])))
       .and_return(json_body(screening.to_json, status: 200))
 
     within show_participant_card_selector(marge.id) do
@@ -184,24 +199,28 @@ feature 'show allegations' do
       roles: ['Perpetrator', 'Anonymous Reporter']
     )
     lisa = FactoryBot.create(:participant, :victim, first_name: 'Lisa')
-    screening = FactoryBot.create(
-      :screening,
-      participants: [marge, lisa]
-    )
-    allegation = FactoryBot.create(
-      :allegation,
-      victim_id: lisa.id,
-      perpetrator_id: marge.id,
-      screening_id: screening.id,
-      allegation_types: ['General neglect']
-    )
-    screening.allegations << allegation
-    stub_request(:get, intake_api_url(ExternalRoutes.intake_api_screening_path(screening.id)))
+    allegation = {
+      id: '1',
+      victim_person_id: lisa.id,
+      perpetrator_person_id: marge.id,
+      screening_id: '1',
+      types: ['General neglect']
+    }
+    screening = {
+      id: '1',
+      incident_address: {},
+      addresses: [],
+      cross_reports: [],
+      safety_alerts: [],
+      participants: [marge.as_json.symbolize_keys, lisa.as_json.symbolize_keys],
+      allegations: [allegation]
+    }
+    stub_request(:get, ferb_api_url(FerbRoutes.intake_screening_path(screening[:id])))
       .and_return(json_body(screening.to_json, status: 200))
     stub_empty_relationships
     stub_empty_history_for_screening(screening)
 
-    visit screening_path(id: screening.id)
+    visit screening_path(id: screening[:id])
 
     within '.card.show', text: 'Allegations' do
       within 'tbody tr' do
@@ -219,9 +238,9 @@ feature 'show allegations' do
     stub_request(:put, intake_api_url(ExternalRoutes.intake_api_participant_path(marge.id)))
       .and_return(json_body(marge.to_json, status: 200))
 
-    screening.allegations = []
-    screening.participants = [lisa, marge]
-    stub_request(:get, intake_api_url(ExternalRoutes.intake_api_screening_path(screening.id)))
+    screening[:allegations] = []
+    screening[:participants] = [lisa.as_json.symbolize_keys, marge.as_json.symbolize_keys]
+    stub_request(:get, ferb_api_url(FerbRoutes.intake_screening_path(screening[:id])))
       .and_return(json_body(screening.to_json, status: 200))
 
     within edit_participant_card_selector(marge.id) do
@@ -245,8 +264,8 @@ feature 'show allegations' do
     stub_request(:put, intake_api_url(ExternalRoutes.intake_api_participant_path(marge.id)))
       .and_return(json_body(marge.to_json, status: 200))
 
-    screening.participants = [lisa, marge]
-    stub_request(:get, intake_api_url(ExternalRoutes.intake_api_screening_path(screening.id)))
+    screening[:participants] = [lisa.as_json.symbolize_keys, marge.as_json.symbolize_keys]
+    stub_request(:get, ferb_api_url(FerbRoutes.intake_screening_path(screening[:id])))
       .and_return(json_body(screening.to_json, status: 200))
 
     within edit_participant_card_selector(marge.id) do
@@ -276,16 +295,24 @@ feature 'show allegations' do
   scenario 'saving another card will not persist changes to allegations' do
     marge = FactoryBot.create(:participant, :perpetrator, first_name: 'Marge')
     lisa = FactoryBot.create(:participant, :victim, first_name: 'Lisa')
-    screening = FactoryBot.create(:screening, participants: [marge, lisa])
-    stub_request(:get, intake_api_url(ExternalRoutes.intake_api_screening_path(screening.id)))
+    screening = {
+      id: '1',
+      incident_address: {},
+      addresses: [],
+      cross_reports: [],
+      safety_alerts: [],
+      participants: [marge.as_json.symbolize_keys, lisa.as_json.symbolize_keys],
+      allegations: []
+    }
+    stub_request(:get, ferb_api_url(FerbRoutes.intake_screening_path(screening[:id])))
       .and_return(json_body(screening.to_json, status: 200))
     stub_empty_relationships
     stub_empty_history_for_screening(screening)
 
-    visit screening_path(id: screening.id)
+    visit screening_path(id: screening[:id])
 
-    screening.name = 'Hello'
-    stub_request(:put, intake_api_url(ExternalRoutes.intake_api_screening_path(screening.id)))
+    screening[:name] = 'Hello'
+    stub_request(:put, intake_api_url(ExternalRoutes.intake_api_screening_path(screening[:id])))
       .and_return(json_body(screening.to_json, status: 200))
 
     within '.card.show', text: 'Allegations' do
@@ -306,8 +333,8 @@ feature 'show allegations' do
     end
 
     expect(
-      a_request(:put, intake_api_url(ExternalRoutes.intake_api_screening_path(screening.id)))
-      .with(json_body(as_json_without_root_id(screening).merge('participants' => [])))
+      a_request(:put, intake_api_url(ExternalRoutes.intake_api_screening_path(screening[:id])))
+      .with(body: hash_including(allegations: []))
     ).to have_been_made
   end
 
@@ -324,19 +351,28 @@ feature 'show allegations' do
       first_name: 'Homer',
       last_name: 'Simps',
       date_of_birth: nil)
-    screening = FactoryBot.create(
-      :screening,
-      participants: [marge, homer, lisa]
-    )
+    screening = {
+      id: '1',
+      incident_address: {},
+      addresses: [],
+      cross_reports: [],
+      safety_alerts: [],
+      participants: [
+        marge.as_json.symbolize_keys,
+        homer.as_json.symbolize_keys,
+        lisa.as_json.symbolize_keys
+      ],
+      allegations: []
+    }
 
-    stub_request(:get, intake_api_url(ExternalRoutes.intake_api_screening_path(screening.id)))
+    stub_request(:get, ferb_api_url(FerbRoutes.intake_screening_path(screening[:id])))
       .and_return(json_body(screening.to_json, status: 200))
-    stub_request(:put, intake_api_url(ExternalRoutes.intake_api_screening_path(screening.id)))
+    stub_request(:put, intake_api_url(ExternalRoutes.intake_api_screening_path(screening[:id])))
       .and_return(json_body({}.to_json, status: 200))
     stub_empty_relationships
     stub_empty_history_for_screening(screening)
 
-    visit screening_path(id: screening.id)
+    visit screening_path(id: screening[:id])
 
     within '.card.show', text: 'Allegations' do
       click_link 'Edit allegations'
@@ -368,14 +404,13 @@ feature 'show allegations' do
       :allegation,
       victim_id: lisa.id,
       perpetrator_id: homer.id,
-      screening_id: screening.id,
+      screening_id: screening[:id],
       allegation_types: ['Exploitation']
     )
-    screening.allegations << new_allegation
 
     expect(
-      a_request(:put, intake_api_url(ExternalRoutes.intake_api_screening_path(screening.id)))
-      .with(json_body(as_json_without_root_id(screening).merge('participants' => [])))
+      a_request(:put, intake_api_url(ExternalRoutes.intake_api_screening_path(screening[:id])))
+      .with(body: hash_including(allegations: [new_allegation.as_json.symbolize_keys]))
     ).to have_been_made
   end
 end

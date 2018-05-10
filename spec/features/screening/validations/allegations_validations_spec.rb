@@ -7,24 +7,22 @@ feature 'Allegations Validations' do
   scenario 'User sees that allegations are required when decision is promote to referral' do
     perpetrator = FactoryBot.create(:participant, :perpetrator)
     victim = FactoryBot.create(:participant, :victim)
-    screening = FactoryBot.create(
-      :screening,
-      participants: [perpetrator, victim],
+    screening = {
+      id: '1',
+      incident_address: {},
+      addresses: [],
+      cross_reports: [],
+      allegations: [],
+      safety_alerts: [],
+      participants: [perpetrator.as_json.symbolize_keys, victim.as_json.symbolize_keys],
       screening_decision: 'promote_to_referral'
-    )
-    allegation = FactoryBot.create(
-      :allegation,
-      victim_id: victim.id,
-      perpetrator_id: perpetrator.id,
-      screening_id: screening.id
-    )
-    screening.allegations << allegation
-    stub_request(:get, intake_api_url(ExternalRoutes.intake_api_screening_path(screening.id)))
+    }
+    stub_request(:get, ferb_api_url(FerbRoutes.intake_screening_path(screening[:id])))
       .and_return(json_body(screening.to_json, status: 200))
     stub_empty_history_for_screening(screening)
     stub_empty_relationships
 
-    visit edit_screening_path(id: screening.id)
+    visit edit_screening_path(id: screening[:id])
 
     error_message = 'must include at least one allegation'
 

@@ -5,19 +5,29 @@ require 'spec_helper'
 require 'factory_bot'
 
 feature 'Narrative Card Validations' do
-  let(:screening) { FactoryBot.create(:screening, report_narrative: '') }
+  let(:screening) do
+    {
+      id: '1',
+      incident_address: {},
+      addresses: [],
+      cross_reports: [],
+      participants: [],
+      allegations: [],
+      report_narrative: ''
+    }
+  end
   let(:error_message) { 'Please enter a narrative.' }
 
   context 'on the edit page' do
     before do
-      stub_request(:get, intake_api_url(ExternalRoutes.intake_api_screening_path(screening.id)))
+      stub_request(:get, ferb_api_url(FerbRoutes.intake_screening_path(screening[:id])))
         .and_return(json_body(screening.to_json, status: 200))
-      stub_request(:put, intake_api_url(ExternalRoutes.intake_api_screening_path(screening.id)))
+      stub_request(:put, intake_api_url(ExternalRoutes.intake_api_screening_path(screening[:id])))
         .and_return(json_body(screening.to_json, status: 200))
       stub_empty_relationships
       stub_empty_history_for_screening(screening)
 
-      visit edit_screening_path(id: screening.id)
+      visit edit_screening_path(id: screening[:id])
 
       # TODO: remove this once we can consistently have a fresh page for these specs
       page.driver.browser.navigate.refresh

@@ -6,17 +6,21 @@ require 'factory_bot'
 
 feature 'Cross Reports Validations' do
   let(:screening) do
-    FactoryBot.create(
-      :screening, cross_reports: [
-        FactoryBot.create(
-          :cross_report,
-          county_id: 'c41',
-          agencies: [
-            FactoryBot.create(:agency, id: nil, type: 'COUNTY_LICENSING')
-          ]
-        )
-      ]
-    )
+    {
+      id: '1',
+      incident_address: {},
+      allegations: [],
+      participants: [],
+      safety_alerts: [],
+      cross_reports: [{
+        id: '1',
+        county_id: 'c41',
+        agencies: [{
+          id: nil,
+          type: 'COUNTY_LICENSING'
+        }]
+      }]
+    }
   end
 
   context 'on the edit page' do
@@ -47,10 +51,12 @@ feature 'Cross Reports Validations' do
       context 'save with an agency' do
         before do
           stub_county_agencies('c41')
-          screening.cross_reports[0].agencies[0].id = 'EYIS9Nh75C'
+          screening[:cross_reports][0][:agencies][0][:id] = 'EYIS9Nh75C'
           stub_and_visit_edit_screening(screening)
-          stub_request(:put, intake_api_url(ExternalRoutes.intake_api_screening_path(screening.id)))
-            .and_return(json_body(screening.to_json, status: 201))
+          stub_request(
+            :put,
+            intake_api_url(ExternalRoutes.intake_api_screening_path(screening[:id]))
+          ).and_return(json_body(screening.to_json, status: 201))
         end
         scenario 'shows no error when filled in' do
           select 'Hoverment Agency', from: 'County licensing agency name'

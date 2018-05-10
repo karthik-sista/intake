@@ -10,23 +10,18 @@ feature 'Screening Decision Validations' do
   let(:screening_decision_detail) { nil }
   let(:additional_information) { nil }
   let(:screening) do
-    FactoryBot.create(
-      :screening,
-      participants: [perpetrator, victim],
+    {
+      id: '1',
+      incident_address: {},
+      addresses: [],
+      cross_reports: [],
+      allegations: [],
+      safety_alerts: [],
+      participants: [perpetrator.as_json.symbolize_keys, victim.as_json.symbolize_keys],
       screening_decision_detail: screening_decision_detail,
       additional_information: additional_information,
       screening_decision: screening_decision
-    )
-  end
-
-  before do
-    allegation = FactoryBot.create(
-      :allegation,
-      victim_id: victim.id,
-      perpetrator_id: perpetrator.id,
-      screening_id: screening.id
-    )
-    screening.allegations << allegation
+    }
   end
 
   context 'When page is opened in edit mode' do
@@ -236,7 +231,7 @@ feature 'Screening Decision Validations' do
       let(:screening_decision) { nil }
 
       scenario 'do not show error on restriction_rationale' do
-        stub_request(:put, intake_api_url(ExternalRoutes.intake_api_screening_path(screening.id)))
+        stub_request(:put, intake_api_url(ExternalRoutes.intake_api_screening_path(screening[:id])))
           .and_return(json_body(screening.to_json, status: 200))
         blur_field
         should_not_have_content error_message, inside: '#decision-card.edit'

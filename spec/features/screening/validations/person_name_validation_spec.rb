@@ -5,10 +5,18 @@ require 'spec_helper'
 
 feature 'Person Information Validations' do
   let(:screening) do
-    FactoryBot.create :screening,
-      participants: [person],
+    {
+      id: '1',
+      incident_address: {},
+      addresses: [],
+      cross_reports: [],
+      participants: [person.as_json.symbolize_keys],
+      allegations: [],
+      report_narrative: '',
       started_at: Time.new(2018, 12, 13)
+    }
   end
+
   let(:person_name) { "#{person.first_name} #{person.last_name}" }
 
   before do

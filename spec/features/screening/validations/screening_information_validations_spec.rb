@@ -5,7 +5,17 @@ require 'spec_helper'
 require 'factory_bot'
 
 feature 'Screening Information Validations' do
-  let(:screening) { FactoryBot.create(:screening) }
+  let(:screening) do
+    {
+      id: '1',
+      incident_address: {},
+      addresses: [],
+      cross_reports: [],
+      participants: [],
+      allegations: [],
+      safety_alerts: []
+    }
+  end
 
   context 'On the edit page' do
     before do
@@ -85,8 +95,18 @@ feature 'Screening Information Validations' do
 
       context 'with a screening saved with end date in the future' do
         let(:screening) do
-          FactoryBot.create(:screening, ended_at: 30.years.from_now)
+          {
+            id: '1',
+            incident_address: {},
+            addresses: [],
+            cross_reports: [],
+            participants: [],
+            allegations: [],
+            started_at: Time.now,
+            ended_at: 30.years.from_now
+          }
         end
+
         let(:valid_date) { 20.years.ago.iso8601 }
 
         scenario 'show card shows errors until the date is not in the future' do
@@ -133,7 +153,18 @@ feature 'Screening Information Validations' do
       end
 
       context 'with a screening that also has an end date' do
-        let(:screening) { FactoryBot.create :screening, ended_at: 10.years.ago }
+        let(:screening) do
+          {
+            id: '1',
+            incident_address: {},
+            addresses: [],
+            cross_reports: [],
+            participants: [],
+            allegations: [],
+            started_at: Time.now,
+            ended_at: 10.years.ago
+          }
+        end
 
         scenario 'displays an error if the user enters a start date that is after the end date' do
           validate_message_as_user_interacts_with_date_field(
@@ -148,7 +179,15 @@ feature 'Screening Information Validations' do
 
       context 'with a screening saved with start date in the future' do
         let(:screening) do
-          FactoryBot.create(:screening, started_at: 20.years.from_now)
+          {
+            id: '1',
+            incident_address: {},
+            addresses: [],
+            cross_reports: [],
+            participants: [],
+            allegations: [],
+            started_at: 20.years.from_now
+          }
         end
 
         scenario 'show card shows errors until the date is not in the future' do
@@ -163,7 +202,16 @@ feature 'Screening Information Validations' do
 
       context 'With a screening saved with start dates after the end date' do
         let(:screening) do
-          FactoryBot.create(:screening, started_at: 10.years.ago, ended_at: 20.years.ago)
+          {
+            id: '1',
+            incident_address: {},
+            addresses: [],
+            cross_reports: [],
+            participants: [],
+            allegations: [],
+            started_at: 10.years.ago,
+            ended_at: 20.years.ago
+          }
         end
 
         scenario 'show card shows errors until the start date is before the end date' do
@@ -186,12 +234,12 @@ feature 'Screening Information Validations' do
   context 'On the show page' do
     let(:show_card) { '#screening-information-card.show' }
     before do
-      stub_request(:get, intake_api_url(ExternalRoutes.intake_api_screening_path(screening.id)))
+      stub_request(:get, ferb_api_url(FerbRoutes.intake_screening_path(screening[:id])))
         .and_return(json_body(screening.to_json, status: 200))
       stub_empty_relationships
       stub_empty_history_for_screening(screening)
 
-      visit screening_path(id: screening.id)
+      visit screening_path(id: screening[:id])
     end
 
     scenario 'user sees error messages for required fields page load' do
@@ -202,7 +250,17 @@ feature 'Screening Information Validations' do
 
     context 'for a screening that has a saved dates in the future' do
       let(:screening) do
-        FactoryBot.create :screening, started_at: 5.years.from_now, ended_at: 10.years.from_now
+        {
+          id: '1',
+          incident_address: {},
+          addresses: [],
+          cross_reports: [],
+          participants: [],
+          allegations: [],
+          safety_alerts: [],
+          started_at: 5.years.from_now,
+          ended_at: 10.years.from_now
+        }
       end
 
       scenario 'user sees error messages for dates being in the future on page load' do
@@ -213,7 +271,17 @@ feature 'Screening Information Validations' do
 
     context 'for a screening saved with the start date after the end date' do
       let(:screening) do
-        FactoryBot.create :screening, started_at: 5.years.ago, ended_at: 10.years.ago
+        {
+          id: '1',
+          incident_address: {},
+          addresses: [],
+          cross_reports: [],
+          participants: [],
+          allegations: [],
+          safety_alerts: [],
+          started_at: 5.years.ago,
+          ended_at: 10.years.ago
+        }
       end
 
       scenario 'user sees error messages for start date being after end date page load' do

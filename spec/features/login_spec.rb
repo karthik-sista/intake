@@ -138,8 +138,17 @@ feature 'login' do
   end
 
   scenario 'user uses session access code when communicating to API' do
-    screening = FactoryBot.create(:screening, name: 'My Screening')
-    stub_request(:get, intake_api_url(ExternalRoutes.intake_api_screening_path(screening.id)))
+    screening = {
+      id: '1',
+      name: 'My Screening',
+      incident_address: {},
+      addresses: [],
+      cross_reports: [],
+      participants: [],
+      allegations: [],
+      safety_alerts: ['Firearms in Home']
+    }
+    stub_request(:get, ferb_api_url(FerbRoutes.intake_screening_path(screening[:id])))
       .and_return(json_body(screening.to_json, status: 200))
     stub_empty_history_for_screening(screening)
     stub_empty_relationships
@@ -168,19 +177,19 @@ feature 'login' do
     end
 
     Capybara.using_session(:bob) do
-      visit screening_path(screening.id)
+      visit screening_path(screening[:id])
       expect(page).to have_content 'My Screening'
       expect(
-        a_request(:get, intake_api_url(ExternalRoutes.intake_api_screening_path(screening.id)))
+        a_request(:get, ferb_api_url(FerbRoutes.intake_screening_path(screening[:id])))
         .with(headers: { 'Authorization' => bobs_token })
       ).to have_been_made
     end
 
     Capybara.using_session(:alex) do
-      visit screening_path(screening.id)
+      visit screening_path(screening[:id])
       expect(page).to have_content 'My Screening'
       expect(
-        a_request(:get, intake_api_url(ExternalRoutes.intake_api_screening_path(screening.id)))
+        a_request(:get, ferb_api_url(FerbRoutes.intake_screening_path(screening[:id])))
         .with(headers: { 'Authorization' => alexs_token })
       ).to have_been_made
     end
@@ -292,8 +301,17 @@ feature 'login perry v1' do
 
   scenario 'user uses session token when communicating to API' do
     Feature.run_with_activated(:authentication) do
-      screening = FactoryBot.create(:screening, name: 'My Screening')
-      stub_request(:get, intake_api_url(ExternalRoutes.intake_api_screening_path(screening.id)))
+      screening = {
+        id: '1',
+        name: 'My Screening',
+        incident_address: {},
+        addresses: [],
+        cross_reports: [],
+        participants: [],
+        allegations: [],
+        safety_alerts: ['Firearms in Home']
+      }
+      stub_request(:get, ferb_api_url(FerbRoutes.intake_screening_path(screening[:id])))
         .and_return(json_body(screening.to_json, status: 200))
       stub_request(:get, ferb_api_url(FerbRoutes.screenings_path))
         .and_return(json_body([].to_json, status: 200))
@@ -317,19 +335,19 @@ feature 'login perry v1' do
       end
 
       Capybara.using_session(:bob) do
-        visit screening_path(screening.id)
+        visit screening_path(screening[:id])
         expect(page).to have_content 'My Screening'
         expect(
-          a_request(:get, intake_api_url(ExternalRoutes.intake_api_screening_path(screening.id)))
+          a_request(:get, ferb_api_url(FerbRoutes.intake_screening_path(screening[:id])))
           .with(headers: { 'Authorization' => bobs_token })
         ).to have_been_made
       end
 
       Capybara.using_session(:alex) do
-        visit screening_path(screening.id)
+        visit screening_path(screening[:id])
         expect(page).to have_content 'My Screening'
         expect(
-          a_request(:get, intake_api_url(ExternalRoutes.intake_api_screening_path(screening.id)))
+          a_request(:get, ferb_api_url(FerbRoutes.intake_screening_path(screening[:id])))
           .with(headers: { 'Authorization' => alexs_token })
         ).to have_been_made
       end

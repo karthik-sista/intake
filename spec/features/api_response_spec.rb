@@ -4,7 +4,9 @@ require 'rails_helper'
 require 'feature/testing'
 
 feature 'API call' do
-  let(:screening) { create :screening, name: 'Little Shop Of Horrors' }
+  let(:screening) do
+    { id: '1' }
+  end
 
   context 'responds with unauthorized error' do
     let(:auth_login_url) { 'http://www.example.com/authn/login?callback=' }
@@ -27,12 +29,12 @@ feature 'API call' do
       )
 
       visit root_path
-      redirect_url = CGI.escape("#{page.current_url.chomp('/')}#{screening_path(screening.id)}")
+      redirect_url = CGI.escape("#{page.current_url.chomp('/')}#{screening_path(screening[:id])}")
       login_url = "#{auth_login_url}#{redirect_url}"
 
-      stub_request(:get, intake_api_url(ExternalRoutes.intake_api_screening_path(screening.id)))
+      stub_request(:get, ferb_api_url(FerbRoutes.intake_screening_path(screening[:id])))
         .and_return(json_body('I failed', status: 401))
-      visit screening_path(id: screening.id, params: { bar: 'foo' })
+      visit screening_path(id: screening[:id], params: { bar: 'foo' })
 
       # have_current_path waits for the async call to finish, but doesn't verify url params
       # comparing the current_url to login_url compares the full strings
@@ -54,6 +56,6 @@ feature 'API call' do
 
   scenario 'returns a success' do
     stub_and_visit_show_screening(screening)
-    expect(page.current_url).to have_content screening_path(screening.id)
+    expect(page.current_url).to have_content screening_path(screening[:id])
   end
 end

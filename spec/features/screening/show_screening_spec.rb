@@ -6,20 +6,21 @@ require 'factory_bot'
 require 'feature/testing'
 
 feature 'Show Screening' do
-  let(:address) do
-    FactoryBot.create(
-      :address,
-      street_address: '123 fake st',
-      city: 'Springfield',
-      state: 'NY',
-      zip: '12345'
-    )
-  end
   let(:existing_screening) do
-    FactoryBot.create(
-      :screening,
+    {
+      id: '1',
       additional_information: 'The reasoning for this decision',
-      address: address,
+      incident_address: {
+        id: '1',
+        street_address: '123 fake st',
+        city: 'Springfield',
+        state: 'NY',
+        zip: '12345'
+      },
+      addresses: [],
+      participants: [],
+      allegations: [],
+      safety_alerts: [],
       assignee: 'Bob Loblaw',
       communication_method: 'mail',
       ended_at: '2016-08-22T11:00:00.000Z',
@@ -41,18 +42,18 @@ feature 'Show Screening' do
           ]
         }
       ]
-    )
+    }
   end
 
   scenario 'showing screening side bar' do
     stub_county_agencies('c41')
     stub_request(
-      :get, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening.id))
+      :get, ferb_api_url(FerbRoutes.intake_screening_path(existing_screening[:id]))
     ).and_return(json_body(existing_screening.to_json))
     stub_empty_relationships
     stub_empty_history_for_screening(existing_screening)
 
-    visit screening_path(id: existing_screening.id)
+    visit screening_path(id: existing_screening[:id])
 
     within '.side-bar' do
       expect(page.find('a.link', text: 'Screening Information')[:href])
@@ -97,12 +98,12 @@ feature 'Show Screening' do
   scenario 'showing existing screening' do
     stub_county_agencies('c41')
     stub_request(
-      :get, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening.id))
+      :get, ferb_api_url(FerbRoutes.intake_screening_path(existing_screening[:id]))
     ).and_return(json_body(existing_screening.to_json))
     stub_empty_relationships
     stub_empty_history_for_screening(existing_screening)
 
-    visit screening_path(id: existing_screening.id)
+    visit screening_path(id: existing_screening[:id])
     within '.page-header-mast' do
       expect(page).to have_content('The Rocky Horror Picture Show')
     end
@@ -164,7 +165,7 @@ feature 'Show Screening' do
     end
 
     expect(page).to have_link('Home', href: root_path)
-    expect(page).to have_link('Edit', href: edit_screening_path(id: existing_screening.id))
+    expect(page).to have_link('Edit', href: edit_screening_path(id: existing_screening[:id]))
   end
 
   context 'when screenings are disabled' do
@@ -176,11 +177,11 @@ feature 'Show Screening' do
 
     scenario 'cannot view an existing screening', browser: :poltergeist do
       stub_request(
-        :get, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening.id))
+        :get, ferb_api_url(FerbRoutes.intake_screening_path(existing_screening[:id]))
       ).and_return(json_body(existing_screening.to_json))
       stub_empty_relationships
       stub_empty_history_for_screening(existing_screening)
-      visit screening_path(id: existing_screening.id)
+      visit screening_path(id: existing_screening[:id])
 
       expect(page).to have_content('Sorry, this is not the page you want')
     end
@@ -188,11 +189,16 @@ feature 'Show Screening' do
 
   context 'when a screening has already been submitted as a referral' do
     let(:existing_screening) do
-      FactoryBot.create(
-        :screening,
+      {
+        id: '1',
         referral_id: '123ABC',
         additional_information: 'The reasoning for this decision',
-        address: address,
+        incident_address: {
+          street_address: '123 fake st',
+          city: 'Springfield',
+          state: 'NY',
+          zip: '12345'
+        },
         assignee: 'Bob Loblaw',
         communication_method: 'mail',
         ended_at: '2016-08-22T11:00:00.000Z',
@@ -205,32 +211,42 @@ feature 'Show Screening' do
         screening_decision: 'screen_out',
         screening_decision_detail: 'consultation',
         started_at: '2016-08-13T10:00:00.000Z',
-        cross_reports: [
-          { agency_type: 'DISTRICT_ATTORNEY', agency_code: '45Hvp7x00F' },
-          { agency_type: 'COUNTY_LICENSING' }
-        ]
-      )
+        cross_reports: [{
+          id: '1',
+          county_id: 'c41',
+          agencies: [
+            { type: 'DISTRICT_ATTORNEY', id: '45Hvp7x00F' },
+            { type: 'COUNTY_LICENSING' }
+          ]
+        }],
+        allegations: [],
+        safety_alerts: []
+      }
     end
 
     before do
-      existing_screening.participants = Array.new(3) do
-        FactoryBot.create :participant, screening_id: existing_screening.id
+      stub_county_agencies('c41')
+      existing_screening[:participants] = Array.new(3) do
+        FactoryBot.create(
+          :participant,
+          screening_id: existing_screening[:id]
+        ).as_json.symbolize_keys
       end
     end
 
     scenario 'the screening is in read only mode' do
       stub_request(
         :get,
-        intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening.id))
+        ferb_api_url(FerbRoutes.intake_screening_path(existing_screening[:id]))
       ).and_return(json_body(existing_screening.to_json))
       stub_empty_relationships
       stub_empty_history_for_screening(existing_screening)
 
-      visit screening_path(id: existing_screening.id)
+      visit screening_path(id: existing_screening[:id])
       within '.page-header-mast' do
         expect(page).to have_content('The Rocky Horror Picture Show')
       end
-      expect(page).to have_content "Referral ##{existing_screening.referral_id}"
+      expect(page).to have_content "Referral ##{existing_screening[:referral_id]}"
       expect(page).to_not have_css('#search-card', text: 'Search')
       expect(page).to_not have_css('.card.edit')
       expect(page).not_to have_button 'Submit'

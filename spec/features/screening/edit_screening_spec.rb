@@ -5,20 +5,16 @@ require 'spec_helper'
 require 'feature/testing'
 
 feature 'Edit Screening' do
-  let(:address) do
-    FactoryBot.create(
-      :address,
-      street_address: '123 Fake St',
-      city: 'Faketown',
-      state: 'DE',
-      zip: '20134'
-    )
-  end
   let(:existing_screening) do
-    FactoryBot.create(
-      :screening,
+    {
+      id: '1',
       additional_information: 'This is why I decided what I did',
-      address: address,
+      incident_address: {
+        street_address: '123 Fake St',
+        city: 'Faketown',
+        state: 'DE',
+        zip: '20134'
+      },
       assignee: 'Bob Loblaw',
       communication_method: 'phone',
       ended_at: '2016-08-13T11:00:00.000Z',
@@ -40,19 +36,21 @@ feature 'Edit Screening' do
             { type: 'LAW_ENFORCEMENT' }
           ]
         }
-      ]
-    )
+      ],
+      participants: [],
+      allegations: []
+    }
   end
 
   context 'when no screenings are enabled' do
     before(:each) do
       stub_county_agencies('c42')
       stub_request(
-        :get, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening.id))
+        :get, ferb_api_url(FerbRoutes.intake_screening_path(existing_screening[:id]))
       ).and_return(json_body(existing_screening.to_json, status: 200))
       stub_empty_relationships
       stub_empty_history_for_screening(existing_screening)
-      visit edit_screening_path(id: existing_screening.id)
+      visit edit_screening_path(id: existing_screening[:id])
       within '.page-header-mast' do
         expect(page).to have_content('Little Shop Of Horrors')
       end
@@ -96,15 +94,15 @@ feature 'Edit Screening' do
 
       within '#worker-safety-card', text: 'Worker Safety' do
         expect(page).to have_react_select_field(
-          'Worker Safety Alerts', with: existing_screening.safety_alerts
+          'Worker Safety Alerts', with: existing_screening[:safety_alerts]
         )
         expect(page).to have_field(
-          'Additional Safety Information', with: existing_screening.safety_information
+          'Additional Safety Information', with: existing_screening[:safety_information]
         )
         expect(page).to have_button('Save')
         expect(page).to have_button('Cancel')
-        remove_react_select_option('Worker Safety Alerts', existing_screening.safety_alerts.first)
-        expect(page).to have_no_content(existing_screening.safety_alerts.first)
+        remove_react_select_option('Worker Safety Alerts', existing_screening[:safety_alerts].first)
+        expect(page).to have_no_content(existing_screening[:safety_alerts].first)
       end
 
       expect(page).to have_css('#history-card.show', text: 'History')
@@ -183,7 +181,7 @@ feature 'Edit Screening' do
       end
       expect(
         a_request(
-          :put, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening.id))
+          :put, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening[:id]))
         ).with(
           body: hash_including(
             'safety_alerts' => array_including(
@@ -208,11 +206,17 @@ feature 'Edit Screening' do
 
   context 'when a screening has already been submitted as a referral' do
     let(:existing_screening) do
-      FactoryBot.create(
-        :screening,
+      {
+        id: '1',
         referral_id: '123ABC',
         additional_information: 'The reasoning for this decision',
-        address: address,
+        incident_address: {
+          id: '1',
+          street_address: '123 Fake St',
+          city: 'Faketown',
+          state: 'DE',
+          zip: '20134'
+        },
         assignee: 'Bob Loblaw',
         communication_method: 'mail',
         ended_at: '2016-08-22T11:00:00.000Z',
@@ -225,32 +229,39 @@ feature 'Edit Screening' do
         screening_decision: 'screen_out',
         screening_decision_detail: 'consultation',
         started_at: '2016-08-13T10:00:00.000Z',
-        cross_reports: [
-          { agency_type: 'DISTRICT_ATTORNEY', agency_code: '45Hvp7x00F' },
-          { agency_type: 'COUNTY_LICENSING' }
-        ]
-      )
+        cross_reports: [{
+          id: '1',
+          agencies: [
+            { id: '45Hvp7x00F', type: 'DISTRICT_ATTORNEY' },
+            { type: 'COUNTY_LICENSING' }
+          ]
+        }],
+        participants: [],
+        allegations: [],
+        safety_alerts: []
+      }
     end
 
     before do
-      existing_screening.participants = Array.new(3) do
-        FactoryBot.create :participant, screening_id: existing_screening.id
+      stub_county_agencies('c42')
+      existing_screening[:participants] = Array.new(3) do
+        FactoryBot.create :participant, screening_id: existing_screening[:id]
       end
     end
 
     scenario 'the screening is in read only mode' do
       stub_request(
         :get,
-        intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening.id))
+        ferb_api_url(FerbRoutes.intake_screening_path(existing_screening[:id]))
       ).and_return(json_body(existing_screening.to_json))
       stub_empty_relationships
       stub_empty_history_for_screening(existing_screening)
 
-      visit edit_screening_path(id: existing_screening.id)
+      visit edit_screening_path(id: existing_screening[:id])
       within '.page-header-mast' do
         expect(page).to have_content('The Rocky Horror Picture Show')
       end
-      expect(page).to have_content "Referral ##{existing_screening.referral_id}"
+      expect(page).to have_content "Referral ##{existing_screening[:referral_id]}"
       expect(page).to_not have_css('#search-card', text: 'Search')
       expect(page).to_not have_css('.card.edit')
       expect(page).not_to have_button 'Submit'
@@ -269,27 +280,24 @@ feature 'Edit Screening' do
     end
 
     scenario 'cannot edit an existing screening', browser: :poltergeist do
-      visit edit_screening_path(id: existing_screening.id)
+      visit edit_screening_path(id: existing_screening[:id])
       expect(page).to have_content('Sorry, this is not the page you want')
     end
   end
 end
 
 feature 'individual card save' do
-  let(:address) do
-    FactoryBot.create(
-      :address,
-      street_address: '123 Fake St',
-      city: 'Faketown',
-      state: 'DE',
-      zip: '20134',
-      type: nil
-    )
-  end
   let(:existing_screening) do
-    FactoryBot.create(
-      :screening,
-      address: address,
+    {
+      id: '1',
+      additional_information: 'This is why I decided what I did',
+      incident_address: {
+        street_address: '123 Fake St',
+        city: 'Faketown',
+        state: 'DE',
+        zip: '20134',
+        type: nil
+      },
       assignee: 'Bob Loblaw',
       communication_method: 'phone',
       ended_at: '2016-08-13T11:00:00.000Z',
@@ -301,17 +309,21 @@ feature 'individual card save' do
       report_narrative: 'Narrative 123 test',
       screening_decision: 'differential_response',
       screening_decision_detail: 'Text value',
-      started_at: '2016-08-13T10:00:00.000Z'
-    )
+      started_at: '2016-08-13T10:00:00.000Z',
+      participants: [],
+      allegations: [],
+      cross_reports: []
+    }
   end
 
   before(:each) do
     stub_request(
-      :get, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening.id))
+      :get,
+      ferb_api_url(FerbRoutes.intake_screening_path(existing_screening[:id]))
     ).and_return(json_body(existing_screening.to_json, status: 200))
     stub_empty_relationships
     stub_empty_history_for_screening(existing_screening)
-    visit edit_screening_path(id: existing_screening.id)
+    visit edit_screening_path(id: existing_screening[:id])
     within '#screening-information-card' do
       fill_in 'Title/Name of Screening', with: 'This should not save'
     end
@@ -319,22 +331,22 @@ feature 'individual card save' do
 
   scenario 'unchanged attributes are not blanked' do
     within '#incident-information-card', text: 'Incident Information' do
-      existing_screening.address.assign_attributes(id: nil)
+      existing_screening[:incident_address][:id] = nil
       updated_screening = as_json_without_root_id(
         existing_screening
-      ).merge(incident_date: '1996-02-12')
+      ).merge(address: existing_screening[:incident_address], incident_date: '1996-02-12')
+      updated_screening.delete(:incident_address)
       stub_request(
-        :put, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening.id))
-      ).with(json_body(as_json_without_root_id(updated_screening)))
-        .and_return(json_body(updated_screening.to_json))
+        :put, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening[:id]))
+      ).and_return(json_body(updated_screening.to_json))
       stub_empty_relationships
       stub_empty_history_for_screening(existing_screening)
       fill_in_datepicker 'Incident Date', with: '02/12/1996'
       click_button 'Save'
       expect(
         a_request(
-          :put, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening.id))
-        ).with(json_body(as_json_without_root_id(updated_screening)))
+          :put, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening[:id]))
+        )
       ).to have_been_made
     end
   end
@@ -342,12 +354,13 @@ feature 'individual card save' do
   scenario 'narrative saves and cancels in isolation' do
     within '#narrative-card' do
       updated_screening = as_json_without_root_id(existing_screening).merge(
+        address: existing_screening[:incident_address],
         report_narrative: 'This is the updated narrative'
       ).to_json
+      updated_screening.delete('incident_address')
       stub_request(
-        :put, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening.id))
-      ).with(json_body(updated_screening))
-        .and_return(json_body(updated_screening))
+        :put, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening[:id]))
+      ).and_return(json_body(updated_screening))
       stub_empty_relationships
       stub_empty_history_for_screening(existing_screening)
 
@@ -355,15 +368,16 @@ feature 'individual card save' do
       click_button 'Save'
       expect(
         a_request(
-          :put, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening.id))
-        ).with(json_body(updated_screening))
+          :put, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening[:id]))
+        )
       ).to have_been_made
     end
   end
 
   scenario 'cross report save and edits' do
-    existing_screening.cross_reports = [
+    existing_screening[:cross_reports] = [
       {
+        id: '1',
         county_id: 'c41',
         agencies: [
           { id: '65Hvp7x01F', type: 'DISTRICT_ATTORNEY' }
@@ -373,9 +387,8 @@ feature 'individual card save' do
 
     stub_county_agencies('c41')
     stub_request(
-      :put, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening.id))
-    ).with(json_body(as_json_without_root_id(existing_screening)))
-      .and_return(json_body(existing_screening.to_json))
+      :put, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening[:id]))
+    ).and_return(json_body(existing_screening.to_json))
     stub_empty_relationships
     stub_empty_history_for_screening(existing_screening)
 
@@ -388,8 +401,8 @@ feature 'individual card save' do
 
     expect(
       a_request(
-        :put, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening.id))
-      ).with(json_body(as_json_without_root_id(existing_screening)))
+        :put, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening[:id]))
+      )
     ).to have_been_made
 
     within '#cross-report-card' do
@@ -406,8 +419,9 @@ feature 'individual card save' do
       )
     end
 
-    existing_screening.cross_reports = [
+    existing_screening[:cross_reports] = [
       {
+        id: '1',
         county_id: 'c41',
         agencies: [
           { id: '45Hvp7x00F', type: 'DISTRICT_ATTORNEY' }
@@ -416,9 +430,8 @@ feature 'individual card save' do
     ]
 
     stub_request(
-      :put, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening.id))
-    ).with(json_body(as_json_without_root_id(existing_screening)))
-      .and_return(json_body(existing_screening.to_json))
+      :put, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening[:id]))
+    ).and_return(json_body(existing_screening.to_json))
     stub_empty_relationships
     stub_empty_history_for_screening(existing_screening)
 
@@ -428,18 +441,17 @@ feature 'individual card save' do
 
     expect(
       a_request(
-        :put, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening.id))
-      ).with(json_body(as_json_without_root_id(existing_screening)))
-    ).to have_been_made
+        :put, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening[:id]))
+      )
+    ).to have_been_made.twice
   end
 
   scenario 'Worker safety card saves in isolation' do
-    existing_screening.safety_alerts = ['Dangerous Animal on Premises']
-    existing_screening.safety_information = 'Important information!'
+    existing_screening[:safety_alerts] = ['Dangerous Animal on Premises']
+    existing_screening[:safety_information] = 'Important information!'
     stub_request(
-      :put, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening.id))
-    ).with(json_body(as_json_without_root_id(existing_screening)))
-      .and_return(json_body(existing_screening.to_json))
+      :put, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening[:id]))
+    ).and_return(json_body(existing_screening.to_json))
     stub_empty_relationships
     stub_empty_history_for_screening(existing_screening)
 
@@ -450,27 +462,26 @@ feature 'individual card save' do
     end
     expect(
       a_request(
-        :put, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening.id))
-      ).with(json_body(as_json_without_root_id(existing_screening)))
+        :put, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening[:id]))
+      )
     ).to have_been_made
   end
 
   scenario 'Incident information saves and cancels in isolation' do
     within '#incident-information-card', text: 'Incident Information' do
-      existing_screening.address.assign_attributes(
+      existing_screening[:incident_address] = {
         street_address: '33 Whatever Rd',
         city: 'Modesto',
         state: 'TX',
         zip: '57575',
         type: nil,
         id: nil
-      )
-      existing_screening.incident_date = '1996-02-12'
+      }
+      existing_screening[:incident_date] = '1996-02-12'
 
       stub_request(
-        :put, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening.id))
-      ).with(json_body(as_json_without_root_id(existing_screening)))
-        .and_return(json_body(existing_screening.to_json))
+        :put, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening[:id]))
+      ).and_return(json_body(existing_screening.to_json))
       stub_empty_relationships
       stub_empty_history_for_screening(existing_screening)
 
@@ -483,8 +494,8 @@ feature 'individual card save' do
 
       expect(
         a_request(
-          :put, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening.id))
-        ).with(json_body(as_json_without_root_id(existing_screening)))
+          :put, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening[:id]))
+        )
       ).to have_been_made
     end
   end

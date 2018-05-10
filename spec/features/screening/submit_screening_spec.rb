@@ -5,10 +5,28 @@ require 'spec_helper'
 require 'feature/testing'
 
 feature 'Submit Screening' do
-  let(:existing_screening) { FactoryBot.create(:screening, :submittable) }
+  let(:screening) do
+    {
+      id: '1',
+      started_at: Time.now,
+      assignee: 'Jane Smith',
+      report_narrative: 'My narrative',
+      screening_decision: 'differential_response',
+      communication_method: 'fax',
+      incident_address: {},
+      addresses: [],
+      cross_reports: [],
+      participants: [],
+      allegations: [],
+      safety_alerts: []
+    }
+  end
+
+  let(:existing_screening) { screening }
+
   before do
     stub_request(
-      :get, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening.id))
+      :get, ferb_api_url(FerbRoutes.intake_screening_path(existing_screening[:id]))
     ).and_return(json_body(existing_screening.to_json, status: 200))
     stub_empty_history_for_screening(existing_screening)
     stub_empty_relationships
@@ -18,11 +36,7 @@ feature 'Submit Screening' do
   context 'screening has people' do
     let(:participant) { FactoryBot.create(:participant) }
     let(:existing_screening) do
-      FactoryBot.create(
-        :screening,
-        :submittable,
-        participants: [participant]
-      )
+      screening.merge(participants: [participant.as_json.symbolize_keys])
     end
 
     before do
@@ -32,7 +46,7 @@ feature 'Submit Screening' do
     end
 
     scenario 'submit button is disabled until all cards are saved' do
-      visit edit_screening_path(existing_screening.id)
+      visit edit_screening_path(existing_screening[:id])
       expect(page).to have_button('Submit', disabled: true)
       within('.card', text: 'Screening Information') { click_button 'Save' }
       within edit_participant_card_selector(participant.id) do
@@ -49,7 +63,7 @@ feature 'Submit Screening' do
     end
 
     scenario 'submit button is disabled if screening cards are saved but person cards are not' do
-      visit edit_screening_path(existing_screening.id)
+      visit edit_screening_path(existing_screening[:id])
       expect(page).to have_button('Submit', disabled: true)
       within('.card', text: 'Screening Information') { click_button 'Save' }
       within('.card', text: 'Narrative') { click_button 'Save' }
@@ -67,7 +81,7 @@ feature 'Submit Screening' do
     end
 
     scenario 'submit button is disabled if person cards are saved but screening cards are not' do
-      visit edit_screening_path(existing_screening.id)
+      visit edit_screening_path(existing_screening[:id])
       expect(page).to have_button('Submit', disabled: true)
       within('.card', text: 'Screening Information') { click_button 'Save' }
       within edit_participant_card_selector(participant.id) do
@@ -87,17 +101,18 @@ feature 'Submit Screening' do
 
   context 'the screening does not have all of the information to be promoted to a referral' do
     let(:existing_screening) do
-      FactoryBot.create(
-        :screening,
+      existing_screening = screening.merge(
         started_at: Time.now,
         assignee: 'Jane Smith',
         report_narrative: 'My narrative',
         screening_decision: 'differential_response'
       )
+      existing_screening.delete(:communication_method)
+      existing_screening
     end
 
     scenario 'the submit button is disabled until the screening is valid' do
-      visit edit_screening_path(existing_screening.id)
+      visit edit_screening_path(existing_screening[:id])
       save_all_cards
       expect(page).to have_button('Submit', disabled: true)
       within('.card', text: 'Screening Information') { click_link 'Edit' }
@@ -119,14 +134,13 @@ feature 'Submit Screening' do
     let(:person) { FactoryBot.create(:participant, ssn: '666-12-3456') }
     let(:person_name) { "#{person.first_name} #{person.last_name}" }
     let(:existing_screening) do
-      FactoryBot.create(
-        :screening,
+      screening.merge(
         started_at: Time.now,
         assignee: 'Jane Smith',
         report_narrative: 'My narrative',
         screening_decision: 'differential_response',
         communication_method: 'fax',
-        participants: [person]
+        participants: [person.as_json.symbolize_keys]
       )
     end
 
@@ -135,7 +149,7 @@ feature 'Submit Screening' do
         :put, intake_api_url(ExternalRoutes.intake_api_participant_path(person.id))
       ).and_return(json_body(person.to_json, status: 200))
 
-      visit edit_screening_path(existing_screening.id)
+      visit edit_screening_path(existing_screening[:id])
       save_all_cards
       within('.card', text: person_name) { click_button 'Save' }
       expect(page).to have_button('Submit', disabled: true)
@@ -159,21 +173,20 @@ feature 'Submit Screening' do
   context 'when successfully submmitting referral' do
     let(:referral_id) { FFaker::Guid.guid }
     let(:screening_with_referral) do
-      FactoryBot.create(
-        :screening,
-        :submittable,
-        referral_id: referral_id
-      )
+      referral = screening.merge(referral_id: referral_id)
+      referral[:address] = referral.delete(:incident_address)
+      referral
     end
+
     before do
       stub_request(
         :post,
-        intake_api_url(ExternalRoutes.intake_api_screening_submit_path(existing_screening.id))
+        intake_api_url(ExternalRoutes.intake_api_screening_submit_path(existing_screening[:id]))
       ).and_return(json_body(screening_with_referral.to_json, status: 201))
     end
 
     scenario 'does not display an error banner with count of errors' do
-      visit edit_screening_path(existing_screening.id)
+      visit edit_screening_path(existing_screening[:id])
       save_all_cards
       click_button 'Submit'
 
@@ -181,7 +194,7 @@ feature 'Submit Screening' do
     end
 
     scenario 'does not display an error alert with details of errors' do
-      visit edit_screening_path(existing_screening.id)
+      visit edit_screening_path(existing_screening[:id])
       save_all_cards
       click_button 'Submit'
 
@@ -189,14 +202,14 @@ feature 'Submit Screening' do
     end
 
     scenario 'displays a success modal and submits a screening to the API' do
-      visit edit_screening_path(existing_screening.id)
+      visit edit_screening_path(existing_screening[:id])
       save_all_cards
       click_button 'Submit'
 
       expect(
         a_request(
           :post,
-          intake_api_url(ExternalRoutes.intake_api_screening_submit_path(existing_screening.id))
+          intake_api_url(ExternalRoutes.intake_api_screening_submit_path(existing_screening[:id]))
         )
       ).to have_been_made
 
@@ -267,16 +280,16 @@ feature 'Submit Screening' do
     before do
       stub_request(
         :post,
-        intake_api_url(ExternalRoutes.intake_api_screening_submit_path(existing_screening.id))
+        intake_api_url(ExternalRoutes.intake_api_screening_submit_path(existing_screening[:id]))
       ).and_return(json_body(errors.to_json, status: 422))
-      visit edit_screening_path(existing_screening.id)
+      visit edit_screening_path(existing_screening[:id])
       save_all_cards
       click_button 'Submit'
 
       expect(
         a_request(
           :post,
-          intake_api_url(ExternalRoutes.intake_api_screening_submit_path(existing_screening.id))
+          intake_api_url(ExternalRoutes.intake_api_screening_submit_path(existing_screening[:id]))
         )
       ).to have_been_made
     end

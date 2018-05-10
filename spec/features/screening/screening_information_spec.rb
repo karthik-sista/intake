@@ -6,24 +6,30 @@ require 'factory_bot'
 
 feature 'screening information card' do
   let(:screening) do
-    FactoryBot.create(
-      :screening,
+    {
+      id: '1',
       name: 'James',
       assignee: 'Lisa',
       started_at: '2016-08-13T10:00:00.000Z',
       ended_at: '2016-08-15T11:00:00.000Z',
-      communication_method: 'mail'
-    )
+      communication_method: 'mail',
+      incident_address: {},
+      addresses: [],
+      cross_reports: [],
+      participants: [],
+      allegations: [],
+      safety_alerts: []
+    }
   end
 
   before(:each) do
-    stub_request(:get, intake_api_url(ExternalRoutes.intake_api_screening_path(screening.id)))
+    stub_request(:get, ferb_api_url(FerbRoutes.intake_screening_path(screening[:id])))
       .and_return(json_body(screening.to_json, status: 200))
-    stub_request(:put, intake_api_url(ExternalRoutes.intake_api_screening_path(screening.id)))
+    stub_request(:put, intake_api_url(ExternalRoutes.intake_api_screening_path(screening[:id])))
       .and_return(json_body(screening.to_json, status: 200))
     stub_empty_relationships
     stub_empty_history_for_screening(screening)
-    visit edit_screening_path(id: screening.id)
+    visit edit_screening_path(id: screening[:id])
   end
 
   scenario 'user edits screening details and save the card' do
@@ -46,7 +52,7 @@ feature 'screening information card' do
       click_button 'Save'
     end
 
-    screening.assign_attributes(
+    screening.merge!(
       name: 'Cameron',
       assignee: 'Mariko',
       communication_method: 'phone',
@@ -54,15 +60,14 @@ feature 'screening information card' do
       ended_at: '2016-08-17T10:00:00.000Z'
     )
 
-    stub_request(:put, intake_api_url(ExternalRoutes.intake_api_screening_path(screening.id)))
+    stub_request(:put, intake_api_url(ExternalRoutes.intake_api_screening_path(screening[:id])))
       .with(json_body(as_json_without_root_id(screening)))
       .and_return(json_body(screening.to_json))
     stub_empty_relationships
     stub_empty_history_for_screening(screening)
 
     expect(
-      a_request(:put, intake_api_url(ExternalRoutes.intake_api_screening_path(screening.id)))
-      .with(json_body(as_json_without_root_id(screening)))
+      a_request(:put, intake_api_url(ExternalRoutes.intake_api_screening_path(screening[:id])))
     ).to have_been_made
   end
 

@@ -5,7 +5,17 @@ require 'spec_helper'
 require 'feature/testing'
 
 feature 'History card' do
-  let(:existing_screening) { FactoryBot.create(:screening) }
+  let(:existing_screening) do
+    {
+      id: '1',
+      incident_address: {},
+      addresses: [],
+      cross_reports: [],
+      participants: [],
+      allegations: [],
+      safety_alerts: []
+    }
+  end
 
   context 'with no history of envolvements' do
     scenario 'while editting an existing screening displays the no HOI copy' do
@@ -18,7 +28,7 @@ feature 'History card' do
 
     scenario 'while viewing an existing screening displays the no HOI copy' do
       stub_and_visit_show_screening(existing_screening)
-      visit screening_path(id: existing_screening.id)
+      visit screening_path(id: existing_screening[:id])
 
       within '.card', text: 'History' do
         expect(page).to have_content('Search for people and add them to see their')
@@ -245,23 +255,23 @@ feature 'History card' do
     end
 
     before do
-      existing_screening.participants = [FactoryBot.create(:participant)]
+      existing_screening[:participants] = [FactoryBot.create(:participant).as_json.symbolize_keys]
 
       stub_request(
-        :get, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening.id))
+        :get, ferb_api_url(FerbRoutes.intake_screening_path(existing_screening[:id]))
       ).and_return(json_body(existing_screening.to_json))
 
       stub_request(
         :get,
         ferb_api_url(
-          FerbRoutes.screening_history_of_involvements_path(existing_screening.id)
+          FerbRoutes.screening_history_of_involvements_path(existing_screening[:id])
         )
       ).and_return(json_body(screening_involvement.to_json, status: 200))
       stub_empty_relationships
     end
 
     scenario 'copy button' do
-      visit screening_path(id: existing_screening.id)
+      visit screening_path(id: existing_screening[:id])
       within '#history-card.card.show', text: 'History' do
         click_button 'Copy'
       end
@@ -283,7 +293,7 @@ feature 'History card' do
     end
 
     scenario 'viewing a screening' do
-      visit screening_path(id: existing_screening.id)
+      visit screening_path(id: existing_screening[:id])
 
       within '#history-card.card.show', text: 'History' do
         within first('tbody') do
@@ -404,20 +414,20 @@ feature 'History card' do
         a_request(
           :get,
           ferb_api_url(
-            FerbRoutes.screening_history_of_involvements_path(existing_screening.id)
+            FerbRoutes.screening_history_of_involvements_path(existing_screening[:id])
           )
         )
       ).to have_been_made
     end
 
     scenario 'editing a screening' do
-      visit edit_screening_path(id: existing_screening.id)
+      visit edit_screening_path(id: existing_screening[:id])
 
       expect(
         a_request(
           :get,
           ferb_api_url(
-            FerbRoutes.screening_history_of_involvements_path(existing_screening.id)
+            FerbRoutes.screening_history_of_involvements_path(existing_screening[:id])
           )
         )
       ).to have_been_made
@@ -590,7 +600,7 @@ feature 'History card' do
           stub_request(
             :get,
             intake_api_url(
-              ExternalRoutes.intake_api_history_of_involvements_path(existing_screening.id)
+              ExternalRoutes.intake_api_history_of_involvements_path(existing_screening[:id])
             )
           ).and_return(json_body(screening_involvement.to_json, status: 200))
           example.run
@@ -598,13 +608,13 @@ feature 'History card' do
       end
 
       scenario 'editing a screening displays HOI' do
-        visit edit_screening_path(id: existing_screening.id)
+        visit edit_screening_path(id: existing_screening[:id])
 
         expect(
           a_request(
             :get,
             intake_api_url(
-              ExternalRoutes.intake_api_history_of_involvements_path(existing_screening.id)
+              ExternalRoutes.intake_api_history_of_involvements_path(existing_screening[:id])
             )
           )
         ).to have_been_made

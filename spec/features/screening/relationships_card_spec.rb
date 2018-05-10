@@ -4,7 +4,17 @@ require 'rails_helper'
 require 'spec_helper'
 
 feature 'Relationship card' do
-  let(:existing_screening) { FactoryBot.create(:screening) }
+  let(:existing_screening) do
+    {
+      id: '1',
+      incident_address: {},
+      addresses: [],
+      cross_reports: [],
+      participants: [],
+      allegations: [],
+      safety_alerts: []
+    }
+  end
   let(:empty_response) do
     {
       hits: {
@@ -15,7 +25,15 @@ feature 'Relationship card' do
   end
   let(:participant) { FactoryBot.create(:participant) }
   let(:participants_screening) do
-    FactoryBot.create(:screening, participants: [participant])
+    {
+      id: '1',
+      incident_address: {},
+      addresses: [],
+      cross_reports: [],
+      participants: [participant.as_json.symbolize_keys],
+      allegations: [],
+      safety_alerts: []
+    }
   end
   let(:relationships) do
     [
@@ -33,7 +51,7 @@ feature 'Relationship card' do
       :participant,
       first_name: 'Jane',
       last_name: 'Campbell',
-      screening_id: participants_screening.id
+      screening_id: participants_screening[:id]
     )
   end
   let(:jake) do
@@ -80,7 +98,7 @@ feature 'Relationship card' do
   end
   let(:hoi) do
     {
-      id: participants_screening.id,
+      id: participants_screening[:id],
       cases: [],
       referrals: [],
       screenings: [
@@ -133,8 +151,8 @@ feature 'Relationship card' do
   context 'a screening with participants' do
     before do
       stub_request(:get,
-        intake_api_url(
-          ExternalRoutes.intake_api_screening_path(participants_screening.id)
+        ferb_api_url(
+          FerbRoutes.intake_screening_path(participants_screening[:id])
         )).and_return(json_body(participants_screening.to_json))
       stub_empty_history_for_screening(participants_screening)
 
@@ -145,7 +163,7 @@ feature 'Relationship card' do
     end
 
     scenario 'viewing a screening' do
-      visit screening_path(id: participants_screening.id)
+      visit screening_path(id: participants_screening[:id])
 
       within '#relationships-card.card.show', text: 'Relationships' do
         expect(page).to have_content(
@@ -166,7 +184,7 @@ feature 'Relationship card' do
     describe 'editing a screening' do
       scenario 'loads relationships on initial page load' do
         stub_empty_history_for_screening(participants_screening)
-        visit edit_screening_path(id: participants_screening.id)
+        visit edit_screening_path(id: participants_screening[:id])
 
         within '#relationships-card.card.show', text: 'Relationships' do
           expect(page).to have_content(
@@ -186,8 +204,8 @@ feature 'Relationship card' do
       end
 
       scenario 'adding a new person fetches new relationships' do
-        visit edit_screening_path(id: participants_screening.id)
-        screening_id = participants_screening.id
+        visit edit_screening_path(id: participants_screening[:id])
+        screening_id = participants_screening[:id]
 
         stub_request(:post,
           intake_api_url(ExternalRoutes.intake_api_screening_people_path(screening_id)))
@@ -234,7 +252,7 @@ feature 'Relationship card' do
       end
 
       scenario 'saving a new person fetches new relationships' do
-        visit edit_screening_path(id: participants_screening.id)
+        visit edit_screening_path(id: participants_screening[:id])
 
         stub_request(:put,
           intake_api_url(ExternalRoutes.intake_api_participant_path(participant.id)))
@@ -263,11 +281,11 @@ feature 'Relationship card' do
         before(:each) do
           new_relationships.last[:relationships].push(jake)
           stub_empty_history_for_screening(participants_screening, response: hoi)
-          visit edit_screening_path(id: participants_screening.id)
+          visit edit_screening_path(id: participants_screening[:id])
 
           stub_request(:post,
             intake_api_url(
-              ExternalRoutes.intake_api_screening_people_path(participants_screening.id)
+              ExternalRoutes.intake_api_screening_people_path(participants_screening[:id])
             )).and_return(json_body(new_participant.to_json, status: 201))
         end
 
@@ -279,7 +297,7 @@ feature 'Relationship card' do
                 a_request(:post,
                   intake_api_url(
                     ExternalRoutes
-                      .intake_api_screening_people_path(participants_screening.id)
+                      .intake_api_screening_people_path(participants_screening[:id])
                   ))
               ).to have_been_made.times(1)
             end
@@ -333,7 +351,7 @@ feature 'Relationship card' do
               expect(
                 a_request(:get,
                   ferb_api_url(
-                    FerbRoutes.screening_history_of_involvements_path(participants_screening.id)
+                    FerbRoutes.screening_history_of_involvements_path(participants_screening[:id])
                   ))
               ).to have_been_made.twice
 

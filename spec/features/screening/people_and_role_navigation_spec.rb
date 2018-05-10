@@ -6,7 +6,17 @@ require 'feature/testing'
 
 feature 'Create participant' do
   let(:existing_participant) { FactoryBot.create(:participant) }
-  let(:existing_screening) { FactoryBot.create(:screening, participants: [existing_participant]) }
+  let(:existing_screening) do
+    {
+      id: '1',
+      incident_address: {},
+      addresses: [],
+      cross_reports: [],
+      allegations: [],
+      safety_alerts: [],
+      participants: [existing_participant.as_json.symbolize_keys]
+    }
+  end
   let(:marge) do
     FactoryBot.create(
       :participant,
@@ -44,7 +54,7 @@ feature 'Create participant' do
   end
   before do
     stub_request(
-      :get, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening.id))
+      :get, ferb_api_url(FerbRoutes.intake_screening_path(existing_screening[:id]))
     ).and_return(json_body(existing_screening.to_json, status: 200))
     %w[ma mar marg marge marge\ simpson].each do |search_text|
       stub_person_search(search_term: search_text, person_response: marge_response)
@@ -54,10 +64,10 @@ feature 'Create participant' do
   end
 
   scenario 'create and edit an unknown participant' do
-    visit edit_screening_path(id: existing_screening.id)
+    visit edit_screening_path(id: existing_screening[:id])
 
     stub_request(:post,
-      intake_api_url(ExternalRoutes.intake_api_screening_people_path(existing_screening.id)))
+      intake_api_url(ExternalRoutes.intake_api_screening_people_path(existing_screening[:id])))
       .and_return(json_body(marge.to_json, status: 201))
 
     within '#search-card', text: 'Search' do
@@ -74,11 +84,11 @@ feature 'Create participant' do
 
     created_participant_unknown = FactoryBot.create(
       :participant, :unpopulated,
-      screening_id: existing_screening.id
+      screening_id: existing_screening[:id]
     )
 
     stub_request(:post,
-      intake_api_url(ExternalRoutes.intake_api_screening_people_path(existing_screening.id)))
+      intake_api_url(ExternalRoutes.intake_api_screening_people_path(existing_screening[:id])))
       .and_return(json_body(created_participant_unknown.to_json, status: 201))
 
     within '#search-card', text: 'Search' do

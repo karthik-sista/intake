@@ -6,38 +6,42 @@ require 'factory_bot'
 
 feature 'screening incident information card' do
   let(:existing_screening) do
-    FactoryBot.create(
-      :screening,
+    {
+      id: '1',
       incident_county: '06',
       incident_date: '2016-08-11',
-      address: FactoryBot.create(
-        :address,
+      incident_address: {
+        id: '1',
         city: 'Springfield',
         state: 'NY',
         street_address: '123 fake st',
         zip: '12345'
-      ),
+      },
       location_type: "Child's Home",
-      report_narrative: 'Some kind of narrative'
-    )
+      report_narrative: 'Some kind of narrative',
+      addresses: [],
+      cross_reports: [],
+      participants: [],
+      allegations: []
+    }
   end
 
   before(:each) do
     stub_request(
-      :get, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening.id))
+      :get, ferb_api_url(FerbRoutes.intake_screening_path(existing_screening[:id]))
     ).and_return(json_body(existing_screening.to_json))
     stub_empty_relationships
     stub_empty_history_for_screening(existing_screening)
-    visit edit_screening_path(id: existing_screening.id)
+    visit edit_screening_path(id: existing_screening[:id])
   end
 
   scenario 'screening<->address edit merging should not override unchanged values' do
-    existing_screening.address.assign_attributes(street_address: '33 Whatever',
-                                                 id: nil)
+    existing_screening[:address] = existing_screening.delete(:incident_address)
+    existing_screening[:address].merge!(street_address: '33 Whatever',
+                                        id: nil)
     stub_request(
-      :put, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening.id))
-    ).with(json_body(as_json_without_root_id(existing_screening)))
-      .and_return(json_body(existing_screening.to_json))
+      :put, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening[:id]))
+    ).and_return(json_body(existing_screening.to_json))
     stub_empty_relationships
     stub_empty_history_for_screening(existing_screening)
     within '#incident-information-card.edit' do
@@ -45,8 +49,8 @@ feature 'screening incident information card' do
       click_button 'Save'
       expect(
         a_request(
-          :put, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening.id))
-        ).with(json_body(as_json_without_root_id(existing_screening)))
+          :put, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening[:id]))
+        )
       ).to have_been_made
     end
   end
@@ -76,12 +80,11 @@ feature 'screening incident information card' do
       fill_in 'Report Narrative', with: 'Should persist in the form'
     end
 
-    existing_screening.assign_attributes(incident_date: '2015-10-05')
-    existing_screening.address.assign_attributes(id: nil)
+    existing_screening[:incident_date] = '2015-10-05'
+    existing_screening[:address] = existing_screening.delete(:incident_address).merge(id: nil)
     stub_request(
-      :put, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening.id))
-    ).with(json_body(as_json_without_root_id(existing_screening)))
-      .and_return(json_body(existing_screening.to_json))
+      :put, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening[:id]))
+    ).and_return(json_body(existing_screening.to_json))
     stub_empty_relationships
     stub_empty_history_for_screening(existing_screening)
 
@@ -91,8 +94,8 @@ feature 'screening incident information card' do
 
     expect(
       a_request(
-        :put, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening.id))
-      ).with(json_body(as_json_without_root_id(existing_screening)))
+        :put, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening[:id]))
+      )
     ).to have_been_made
 
     within '#incident-information-card.show' do

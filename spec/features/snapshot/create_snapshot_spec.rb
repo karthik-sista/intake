@@ -100,15 +100,15 @@ feature 'Create Snapshot' do
 
   context 'both snapshot and screening are enabled' do
     let(:new_screening) do
-      FactoryBot.create(
-        :screening,
-        indexable: true,
-        reference: 'DQJIYK',
-        safety_alerts: [],
-        safety_information: nil,
-        address: { city: nil },
-        assignee: nil
-      )
+      {
+        id: '1',
+        incident_address: {},
+        addresses: [],
+        cross_reports: [],
+        participants: [],
+        allegations: [],
+        safety_alerts: []
+      }
     end
 
     before do
@@ -126,7 +126,7 @@ feature 'Create Snapshot' do
       stub_request(:post, ferb_api_url(FerbRoutes.intake_screenings_path))
         .and_return(json_body(new_screening.to_json, status: 201))
       stub_request(
-        :get, intake_api_url(ExternalRoutes.intake_api_screening_path(new_screening.id))
+        :get, ferb_api_url(FerbRoutes.intake_screening_path(new_screening[:id]))
       ).and_return(json_body(new_screening.to_json, status: 200))
       click_button 'Start Screening'
 
@@ -141,10 +141,14 @@ feature 'Create Snapshot' do
         end
       end
       stub_person_search(search_term: 'Ma', person_response: search_response)
-      person = FactoryBot.create(:participant, first_name: 'Marge', screening_id: new_screening.id)
+      person = FactoryBot.create(
+        :participant,
+        first_name: 'Marge',
+        screening_id: new_screening[:id]
+      )
       stub_request(
         :post,
-        intake_api_url(ExternalRoutes.intake_api_screening_people_path(new_screening.id))
+        intake_api_url(ExternalRoutes.intake_api_screening_people_path(new_screening[:id]))
       ).and_return(json_body(person.to_json, status: 201))
 
       within '#search-card', text: 'Search' do

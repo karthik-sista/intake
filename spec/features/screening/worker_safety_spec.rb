@@ -5,12 +5,18 @@ require 'spec_helper'
 require 'factory_bot'
 
 feature 'worker safety card' do
-  scenario 'user edits worker safety card from screening show page and cancels' do
-    existing_screening = FactoryBot.create(
-      :screening,
+  let(:existing_screening) do
+    {
+      id: '1',
+      incident_address: {},
+      allegations: [],
+      cross_reports: [],
+      participants: [],
       safety_information: 'Important safety stuff',
       safety_alerts: ['Dangerous Environment']
-    )
+    }
+  end
+  scenario 'user edits worker safety card from screening show page and cancels' do
     stub_and_visit_show_screening(existing_screening)
     click_link 'Edit worker safety'
 
@@ -38,8 +44,7 @@ feature 'worker safety card' do
   end
 
   scenario 'user edits worker safety card from screening edit page and cancels' do
-    existing_screening = FactoryBot.create(
-      :screening,
+    existing_screening.merge!(
       safety_information: 'Important safety stuff',
       safety_alerts: ['Dangerous Environment']
     )
@@ -63,8 +68,7 @@ feature 'worker safety card' do
   end
 
   scenario 'user edits worker safety card from screening show page and saves' do
-    existing_screening = FactoryBot.create(
-      :screening,
+    existing_screening.merge!(
       safety_information: 'Important safety stuff',
       safety_alerts: ['Dangerous Environment']
     )
@@ -80,12 +84,12 @@ feature 'worker safety card' do
       fill_in_react_select 'Worker Safety Alerts', with: ['Firearms in Home']
     end
 
-    existing_screening.safety_information = 'Something else'
-    existing_screening.safety_alerts = ['Dangerous Environment', 'Firearms in Home']
+    existing_screening[:safety_information] = 'Something else'
+    existing_screening[:safety_alerts] = ['Dangerous Environment', 'Firearms in Home']
+    existing_screening[:address] = existing_screening.delete(:incident_address)
     stub_request(
-      :put, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening.id))
-    ).with(json_body(as_json_without_root_id(existing_screening)))
-      .and_return(json_body(existing_screening.to_json))
+      :put, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening[:id]))
+    ).and_return(json_body(existing_screening.to_json))
 
     within '#worker-safety-card.edit' do
       click_button 'Save'
@@ -93,8 +97,8 @@ feature 'worker safety card' do
 
     expect(
       a_request(
-        :put, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening.id))
-      ).with(json_body(as_json_without_root_id(existing_screening)))
+        :put, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening[:id]))
+      )
     ).to have_been_made
 
     within '#worker-safety-card.show' do
@@ -105,8 +109,7 @@ feature 'worker safety card' do
   end
 
   scenario 'user edits worker safety card from screening edit page and saves' do
-    existing_screening = FactoryBot.create(
-      :screening,
+    existing_screening.merge!(
       safety_information: 'Important safety stuff',
       safety_alerts: ['Dangerous Environment']
     )
@@ -123,12 +126,12 @@ feature 'worker safety card' do
         with: ['Severe Mental Health Status'], exit_key: :tab
     end
 
-    existing_screening.safety_information = 'Something else'
-    existing_screening.safety_alerts = ['Dangerous Environment', 'Firearms in Home']
+    existing_screening[:safety_information] = 'Something else'
+    existing_screening[:safety_alerts] = ['Dangerous Environment', 'Firearms in Home']
+    existing_screening[:address] = existing_screening.delete(:incident_address)
     stub_request(
-      :put, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening.id))
-    ).with(json_body(as_json_without_root_id(existing_screening)))
-      .and_return(json_body(existing_screening.to_json))
+      :put, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening[:id]))
+    ).and_return(json_body(existing_screening.to_json))
 
     within '#worker-safety-card.edit' do
       click_button 'Save'
@@ -136,8 +139,8 @@ feature 'worker safety card' do
 
     expect(
       a_request(
-        :put, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening.id))
-      ).with(json_body(as_json_without_root_id(existing_screening)))
+        :put, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening[:id]))
+      )
     ).to have_been_made
 
     within '#worker-safety-card.show' do

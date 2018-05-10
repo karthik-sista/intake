@@ -6,22 +6,28 @@ require 'factory_bot'
 
 feature 'decision card' do
   let(:screening) do
-    FactoryBot.create(
-      :screening,
+    {
+      id: '1',
       screening_decision: 'promote_to_referral',
       screening_decision_detail: '3_days',
-      additional_information: 'this is why it is'
-    )
+      additional_information: 'this is why it is',
+      incident_address: {},
+      addresses: [],
+      cross_reports: [],
+      participants: [],
+      allegations: [],
+      safety_alerts: []
+    }
   end
 
   before(:each) do
     stub_empty_history_for_screening(screening)
-    stub_request(:get, intake_api_url(ExternalRoutes.intake_api_screening_path(screening.id)))
+    stub_request(:get, ferb_api_url(FerbRoutes.intake_screening_path(screening[:id])))
       .and_return(json_body(screening.to_json, status: 200))
     stub_empty_relationships
     stub_empty_history_for_screening(screening)
 
-    visit edit_screening_path(id: screening.id)
+    visit edit_screening_path(id: screening[:id])
   end
 
   scenario 'initial configuration' do
@@ -86,16 +92,15 @@ feature 'decision card' do
   end
 
   scenario 'edit and save new values' do
-    screening.assign_attributes(
+    screening.merge!(
       screening_decision: 'differential_response',
       screening_decision_detail: 'An arbitrary string',
       additional_information: 'I changed my decision rationale',
       restrictions_rationale: 'Someone in this screening has sensitive information',
-      access_restrictions: 'sensitive'
+      access_restrictions: 'sensitive',
+      address: screening.delete(:incident_address)
     )
-
-    stub_request(:put, intake_api_url(ExternalRoutes.intake_api_screening_path(screening.id)))
-      .with(json_body(as_json_without_root_id(screening)))
+    stub_request(:put, intake_api_url(ExternalRoutes.intake_api_screening_path(screening[:id])))
       .and_return(json_body(screening.to_json))
 
     within '#decision-card.edit' do
@@ -113,8 +118,7 @@ feature 'decision card' do
       click_button 'Save'
     end
     expect(
-      a_request(:put, intake_api_url(ExternalRoutes.intake_api_screening_path(screening.id)))
-      .with(json_body(as_json_without_root_id(screening)))
+      a_request(:put, intake_api_url(ExternalRoutes.intake_api_screening_path(screening[:id])))
     ).to have_been_made
     within '#decision-card.show' do
       expect(page).to have_content('SDM Hotline Tool')

@@ -6,10 +6,19 @@ require 'feature/testing'
 
 feature 'Delete Participant' do
   let(:participant) { FactoryBot.create(:participant) }
-  let(:screening) { FactoryBot.create(:screening, participants: [participant]) }
+  let(:screening) do
+    {
+      id: '1',
+      cross_reports: [],
+      allegations: [],
+      incident_address: {},
+      safety_alerts: [],
+      participants: [participant.as_json.symbolize_keys]
+    }
+  end
 
   before do
-    stub_request(:get, intake_api_url(ExternalRoutes.intake_api_screening_path(screening.id)))
+    stub_request(:get, ferb_api_url(FerbRoutes.intake_screening_path(screening[:id])))
       .and_return(json_body(screening.to_json, status: 200))
     stub_request(
       :delete, intake_api_url(ExternalRoutes.intake_api_participant_path(participant.id))
@@ -19,14 +28,14 @@ feature 'Delete Participant' do
   end
 
   scenario 'removing a participant from an existing screening in edit mode' do
-    visit edit_screening_path(id: screening.id)
+    visit edit_screening_path(id: screening[:id])
 
     within edit_participant_card_selector(participant.id) do
       expect(page).to have_content(participant.first_name)
     end
 
-    screening.participants = []
-    stub_request(:get, intake_api_url(ExternalRoutes.intake_api_screening_path(screening.id)))
+    screening[:participants] = []
+    stub_request(:get, ferb_api_url(FerbRoutes.intake_screening_path(screening[:id])))
       .and_return(json_body(screening.to_json, status: 200))
 
     within edit_participant_card_selector(participant.id) do
@@ -41,10 +50,10 @@ feature 'Delete Participant' do
   end
 
   scenario 'removing a participant from an existing screening in show mode' do
-    visit screening_path(id: screening.id)
+    visit screening_path(id: screening[:id])
 
-    screening.participants = []
-    stub_request(:get, intake_api_url(ExternalRoutes.intake_api_screening_path(screening.id)))
+    screening[:participants] = []
+    stub_request(:get, ferb_api_url(FerbRoutes.intake_screening_path(screening[:id])))
       .and_return(json_body(screening.to_json, status: 200))
 
     within show_participant_card_selector(participant.id) do

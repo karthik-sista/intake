@@ -20,10 +20,18 @@ feature 'Race & Ethnicity' do
       ethnicity: { hispanic_latino_origin: 'Declined to answer', ethnicity_detail: [] }
     )
   end
-  let(:screening) { FactoryBot.create(:screening, participants: [marge, homer]) }
+  let(:screening) do
+    {
+      id: '1',
+      incident_address: {},
+      cross_reports: [],
+      allegations: [],
+      participants: [marge.as_json.symbolize_keys, homer.as_json.symbolize_keys]
+    }
+  end
 
   before do
-    stub_request(:get, intake_api_url(ExternalRoutes.intake_api_screening_path(screening.id)))
+    stub_request(:get, ferb_api_url(FerbRoutes.intake_screening_path(screening[:id])))
       .and_return(json_body(screening.to_json, status: 200))
     stub_empty_history_for_screening(screening)
     stub_empty_relationships
@@ -31,7 +39,7 @@ feature 'Race & Ethnicity' do
 
   context 'when changing to abandoned, unknown, declined' do
     it 'disables and unselects the other checkboxes' do
-      visit edit_screening_path(id: screening.id)
+      visit edit_screening_path(id: screening[:id])
       within edit_participant_card_selector(marge.id) do
         within '#race' do
           expect(find('input[value="Asian"]')).to be_checked
@@ -90,7 +98,7 @@ feature 'Race & Ethnicity' do
 
   context 'when changing to race or ethnicity' do
     it 'enables and allows selection of the other checkboxes' do
-      visit edit_screening_path(id: screening.id)
+      visit edit_screening_path(id: screening[:id])
       within edit_participant_card_selector(homer.id) do
         within '#race' do
           expect(find('input[value="Unknown"]')).to be_checked

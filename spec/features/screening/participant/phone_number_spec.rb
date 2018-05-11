@@ -6,10 +6,19 @@ require 'spec_helper'
 feature 'Participant Phone Number' do
   let(:existing_phone_number) { PhoneNumber.new(id: '1', number: '9175555555', type: 'Work') }
   let(:marge) { FactoryBot.create(:participant, phone_numbers: [existing_phone_number]) }
-  let(:screening) { FactoryBot.create(:screening, participants: [marge]) }
+  let(:screening) do
+    {
+      id: '1',
+      incident_address: {},
+      cross_reports: [],
+      allegations: [],
+      safety_alerts: [],
+      participants: [marge.as_json.symbolize_keys]
+    }
+  end
 
   before do
-    stub_request(:get, intake_api_url(ExternalRoutes.intake_api_screening_path(screening.id)))
+    stub_request(:get, ferb_api_url(FerbRoutes.intake_screening_path(screening[:id])))
       .and_return(json_body(screening.to_json, status: 200))
     stub_request(
       :put, intake_api_url(ExternalRoutes.intake_api_participant_path(marge.id))
@@ -19,7 +28,7 @@ feature 'Participant Phone Number' do
   end
 
   scenario 'adding a new phone number to a participant' do
-    visit edit_screening_path(id: screening.id)
+    visit edit_screening_path(id: screening[:id])
 
     marge.phone_numbers << PhoneNumber.new(number: '7894561245', type: 'Home')
 
@@ -43,7 +52,7 @@ feature 'Participant Phone Number' do
   end
 
   scenario 'editing a phone number from a participant' do
-    visit edit_screening_path(id: screening.id)
+    visit edit_screening_path(id: screening[:id])
 
     marge.phone_numbers.first.number = '7894561245'
 
@@ -64,7 +73,7 @@ feature 'Participant Phone Number' do
   end
 
   scenario 'deleting an existing phone number from a participant' do
-    visit screening_path(id: screening.id)
+    visit screening_path(id: screening[:id])
 
     within show_participant_card_selector(marge.id) do
       expect(page).to have_content('(917) 555-5555')
@@ -86,7 +95,7 @@ feature 'Participant Phone Number' do
   end
 
   scenario 'filling phone number with a combinaiton of valid and invalid characters' do
-    visit edit_screening_path(id: screening.id)
+    visit edit_screening_path(id: screening[:id])
 
     within edit_participant_card_selector(marge.id) do
       within '.card-body' do

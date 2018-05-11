@@ -24,7 +24,7 @@ def build_participant_from_person_and_screening(person, screening)
     legacy_source_table: person.legacy_source_table,
     legacy_descriptor: person.legacy_descriptor,
     races: person.races,
-    screening_id: screening.id.to_s,
+    screening_id: screening[:id].to_s,
     addresses: person.addresses,
     phone_numbers: person.phone_numbers,
     languages: person.languages,
@@ -34,7 +34,16 @@ end
 
 feature 'Create participant' do
   let(:existing_participant) { FactoryBot.create(:participant) }
-  let(:existing_screening) { FactoryBot.create(:screening, participants: [existing_participant]) }
+  let(:existing_screening) do
+    {
+      id: '1',
+      incident_address: {},
+      cross_reports: [],
+      allegations: [],
+      safety_alerts: [],
+      participants: [existing_participant.as_json.symbolize_keys]
+    }
+  end
   let(:marge_date_of_birth) { 15.years.ago.to_date }
   let(:homer_date_of_birth) { 16.years.ago.to_date }
   let(:marge_address) do
@@ -136,14 +145,14 @@ feature 'Create participant' do
 
   before do
     stub_request(
-      :get, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening.id))
+      :get, ferb_api_url(FerbRoutes.intake_screening_path(existing_screening[:id]))
     ).and_return(json_body(existing_screening.to_json, status: 200))
     stub_county_agencies('c40')
     %w[ma mar marg marge marge\ simpson].each do |search_text|
       stub_person_search(search_term: search_text, person_response: marge_response)
     end
     stub_request(
-      :get, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening.id))
+      :get, ferb_api_url(FerbRoutes.intake_screening_path(existing_screening[:id]))
     ).and_return(json_body(existing_screening.to_json, status: 200))
     %w[ho hom home homer].each do |search_text|
       stub_person_search(search_term: search_text, person_response: homer_response)
@@ -153,14 +162,14 @@ feature 'Create participant' do
   end
 
   scenario 'creating an unknown participant' do
-    visit edit_screening_path(id: existing_screening.id)
+    visit edit_screening_path(id: existing_screening[:id])
     created_participant_unknown = FactoryBot.create(
       :participant, :unpopulated,
-      screening_id: existing_screening.id
+      screening_id: existing_screening[:id]
     )
 
     stub_request(:post,
-      intake_api_url(ExternalRoutes.intake_api_screening_people_path(existing_screening.id)))
+      intake_api_url(ExternalRoutes.intake_api_screening_people_path(existing_screening[:id])))
       .and_return(json_body(created_participant_unknown.to_json, status: 201))
 
     within '#search-card', text: 'Search' do
@@ -169,7 +178,7 @@ feature 'Create participant' do
       expect(page).to_not have_button('Create a new person')
     end
     expect(a_request(:post,
-      intake_api_url(ExternalRoutes.intake_api_screening_people_path(existing_screening.id))))
+      intake_api_url(ExternalRoutes.intake_api_screening_people_path(existing_screening[:id]))))
       .to have_been_made
 
     within edit_participant_card_selector(created_participant_unknown.id) do
@@ -181,14 +190,14 @@ feature 'Create participant' do
   end
 
   scenario 'create and edit an unknown participant' do
-    visit edit_screening_path(id: existing_screening.id)
+    visit edit_screening_path(id: existing_screening[:id])
     created_participant_unknown = FactoryBot.create(
       :participant, :unpopulated,
-      screening_id: existing_screening.id
+      screening_id: existing_screening[:id]
     )
 
     stub_request(:post,
-      intake_api_url(ExternalRoutes.intake_api_screening_people_path(existing_screening.id)))
+      intake_api_url(ExternalRoutes.intake_api_screening_people_path(existing_screening[:id])))
       .and_return(json_body(created_participant_unknown.to_json, status: 201))
 
     within '#search-card', text: 'Search' do
@@ -198,7 +207,7 @@ feature 'Create participant' do
     end
 
     expect(a_request(:post,
-      intake_api_url(ExternalRoutes.intake_api_screening_people_path(existing_screening.id))))
+      intake_api_url(ExternalRoutes.intake_api_screening_people_path(existing_screening[:id]))))
       .to have_been_made
 
     within edit_participant_card_selector(created_participant_unknown.id) do
@@ -212,10 +221,10 @@ feature 'Create participant' do
       skip 'Pending this test as it just fails on jenkins when the js alert is triggered'
     end
 
-    visit edit_screening_path(id: existing_screening.id)
+    visit edit_screening_path(id: existing_screening[:id])
 
     stub_request(:post,
-      intake_api_url(ExternalRoutes.intake_api_screening_people_path(existing_screening.id)))
+      intake_api_url(ExternalRoutes.intake_api_screening_people_path(existing_screening[:id])))
       .and_return(json_body('', status: 403))
 
     within '#search-card', text: 'Search' do
@@ -227,7 +236,7 @@ feature 'Create participant' do
   end
 
   scenario 'adding a participant from search on show screening page' do
-    visit screening_path(id: existing_screening.id)
+    visit screening_path(id: existing_screening[:id])
     homer_attributes = build_participant_from_person_and_screening(homer, existing_screening)
     participant_homer = FactoryBot.build(:participant, homer_attributes)
     created_participant_homer = FactoryBot.create(:participant, participant_homer.as_json)
@@ -239,7 +248,7 @@ feature 'Create participant' do
       )).and_return(status: 200)
 
     stub_request(:post,
-      intake_api_url(ExternalRoutes.intake_api_screening_people_path(existing_screening.id)))
+      intake_api_url(ExternalRoutes.intake_api_screening_people_path(existing_screening[:id])))
       .and_return(json_body(created_participant_homer.to_json, status: 201))
 
     within '#search-card', text: 'Search' do
@@ -256,7 +265,7 @@ feature 'Create participant' do
       )))
       .to have_been_made
     expect(a_request(:post,
-      intake_api_url(ExternalRoutes.intake_api_screening_people_path(existing_screening.id))))
+      intake_api_url(ExternalRoutes.intake_api_screening_people_path(existing_screening[:id]))))
       .to have_been_made
 
     within edit_participant_card_selector(created_participant_homer.id) do
@@ -334,9 +343,9 @@ feature 'Create participant' do
           stub_person_search(search_term: 'Marge', person_response: marge_response)
           stub_request(
             :post,
-            intake_api_url(ExternalRoutes.intake_api_screening_people_path(existing_screening.id))
+            intake_api_url(ExternalRoutes.intake_api_screening_people_path(existing_screening[:id]))
           ).and_return(json_body({}.to_json, status: 201))
-          visit edit_screening_path(id: existing_screening.id, token: insensitive_token)
+          visit edit_screening_path(id: existing_screening[:id], token: insensitive_token)
           within '#search-card', text: 'Search' do
             accept_alert('You are not authorized to add this person.') do
               fill_in 'Search for any person', with: 'Marge'
@@ -349,7 +358,7 @@ feature 'Create participant' do
       scenario 'can add insensitive' do
         Feature.run_with_activated(:authentication) do
           stub_empty_history_for_screening(existing_screening)
-          visit edit_screening_path(id: existing_screening.id, token: insensitive_token)
+          visit edit_screening_path(id: existing_screening[:id], token: insensitive_token)
           homer_attributes = build_participant_from_person_and_screening(
             homer,
             existing_screening
@@ -365,9 +374,12 @@ feature 'Create participant' do
                 participant_homer.legacy_descriptor.legacy_id
               )
             )).and_return(status: 200)
-          stub_request(:post,
-            intake_api_url(ExternalRoutes.intake_api_screening_people_path(existing_screening.id)))
-            .and_return(json_body(created_participant_homer.to_json, status: 201))
+          stub_request(
+            :post,
+            intake_api_url(
+              ExternalRoutes.intake_api_screening_people_path(existing_screening[:id])
+            )
+          ).and_return(json_body(created_participant_homer.to_json, status: 201))
           within '#search-card', text: 'Search' do
             fill_in 'Search for any person', with: 'Ho'
             find('strong', text: 'Homer Simpson').click
@@ -383,7 +395,7 @@ feature 'Create participant' do
       scenario 'can add sensitive person' do
         Feature.run_with_activated(:authentication) do
           stub_empty_history_for_screening(existing_screening)
-          visit edit_screening_path(id: existing_screening.id, token: sensitive_token)
+          visit edit_screening_path(id: existing_screening[:id], token: sensitive_token)
           sensitive_marge_attributes = build_participant_from_person_and_screening(
             marge,
             existing_screening
@@ -393,16 +405,24 @@ feature 'Create participant' do
             :participant,
             sensitive_participant_marge.as_json
           )
-          stub_request(:post,
-            intake_api_url(ExternalRoutes.intake_api_screening_people_path(existing_screening.id)))
-            .and_return(json_body(created_participant_marge.to_json, status: 201))
+          stub_request(
+            :post,
+            intake_api_url(
+              ExternalRoutes.intake_api_screening_people_path(existing_screening[:id])
+            )
+          ).and_return(json_body(created_participant_marge.to_json, status: 201))
           within '#search-card', text: 'Search' do
             fill_in 'Search for any person', with: 'Ma'
             find('strong', text: 'Marge Simpson').click
           end
-          expect(a_request(:post,
-            intake_api_url(ExternalRoutes.intake_api_screening_people_path(existing_screening.id))))
-            .to have_been_made
+          expect(
+            a_request(
+              :post,
+              intake_api_url(
+                ExternalRoutes.intake_api_screening_people_path(existing_screening[:id])
+              )
+            )
+          ).to have_been_made
           created_participant_selector = edit_participant_card_selector(
             created_participant_marge.id
           )
@@ -424,7 +444,7 @@ feature 'Create participant' do
       scenario 'can add sensitive person' do
         Feature.run_with_activated(:authentication) do
           stub_empty_history_for_screening(existing_screening)
-          visit edit_screening_path(id: existing_screening.id, token: sensitive_token)
+          visit edit_screening_path(id: existing_screening[:id], token: sensitive_token)
           homer_attributes = build_participant_from_person_and_screening(
             homer,
             existing_screening
@@ -440,9 +460,12 @@ feature 'Create participant' do
                 participant_homer.legacy_descriptor.legacy_id
               )
             )).and_return(status: 200)
-          stub_request(:post,
-            intake_api_url(ExternalRoutes.intake_api_screening_people_path(existing_screening.id)))
-            .and_return(json_body(created_participant_homer.to_json, status: 201))
+          stub_request(
+            :post,
+            intake_api_url(
+              ExternalRoutes.intake_api_screening_people_path(existing_screening[:id])
+            )
+          ).and_return(json_body(created_participant_homer.to_json, status: 201))
           within '#search-card', text: 'Search' do
             fill_in 'Search for any person', with: 'Ho'
             find('strong', text: 'Homer Simpson').click

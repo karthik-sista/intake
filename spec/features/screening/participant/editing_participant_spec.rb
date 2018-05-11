@@ -33,19 +33,28 @@ feature 'Edit Person' do
     "#{marge.first_name} #{marge.middle_name} #{marge.last_name}, #{marge.name_suffix.humanize}"
   end
   let(:homer) { FactoryBot.create(:participant, :with_complete_address, ssn: nil) }
-  let(:screening) { FactoryBot.create(:screening, participants: [marge, homer]) }
+  let(:screening) do
+    {
+      id: '1',
+      cross_reports: [],
+      allegations: [],
+      incident_address: {},
+      safety_alerts: [],
+      participants: [marge.as_json.symbolize_keys, homer.as_json.symbolize_keys]
+    }
+  end
 
   before do
-    stub_request(:get, intake_api_url(ExternalRoutes.intake_api_screening_path(screening.id)))
+    stub_request(:get, ferb_api_url(FerbRoutes.intake_screening_path(screening[:id])))
       .and_return(json_body(screening.to_json, status: 200))
     stub_empty_history_for_screening(screening)
     stub_empty_relationships
-    marge.screening_id = screening.id
-    homer.screening_id = screening.id
+    marge.screening_id = screening[:id]
+    homer.screening_id = screening[:id]
   end
 
   scenario 'character limitations by field' do
-    visit edit_screening_path(id: screening.id)
+    visit edit_screening_path(id: screening[:id])
     within edit_participant_card_selector(marge.id) do
       fill_in 'Zip', with: '9i5%6Y1 8-_3.6+9*7='
       expect(page).to have_field('Zip', with: '95618-3697')
@@ -58,7 +67,7 @@ feature 'Edit Person' do
     scenario 'saves the person information' do
       stub_request(:put, intake_api_url(ExternalRoutes.intake_api_participant_path(marge.id)))
         .and_return(json_body(marge.to_json, status: 201))
-      visit edit_screening_path(id: screening.id)
+      visit edit_screening_path(id: screening[:id])
       within edit_participant_card_selector(marge.id) do
         within '.card-header' do
           expect(page).to have_content('Sensitive')
@@ -105,7 +114,7 @@ feature 'Edit Person' do
       stub_request(:put, intake_api_url(ExternalRoutes.intake_api_participant_path(marge.id)))
         .and_return(json_body({}.to_json, status: 201))
 
-      visit edit_screening_path(id: screening.id)
+      visit edit_screening_path(id: screening[:id])
       within edit_participant_card_selector(marge.id) do
         within '.card-body' do
           expect(page).to have_field('Phone Number', with: '(123)456-7890')
@@ -149,7 +158,7 @@ feature 'Edit Person' do
         .and_return(json_body({}.to_json, status: 201))
 
       address = homer.addresses.first
-      visit edit_screening_path(id: screening.id)
+      visit edit_screening_path(id: screening[:id])
       within edit_participant_card_selector(homer.id) do
         within '.card-body' do
           expect(page).to have_field('Address', with: address.street_address)
@@ -204,7 +213,7 @@ feature 'Edit Person' do
       stub_request(:put, intake_api_url(ExternalRoutes.intake_api_participant_path(marge.id)))
         .and_return(json_body({}.to_json, status: 201))
 
-      visit edit_screening_path(id: screening.id)
+      visit edit_screening_path(id: screening[:id])
       dob = Time.parse(marge.date_of_birth).strftime('%m/%d/%Y')
       within edit_participant_card_selector(marge.id) do
         within '.card-body' do
@@ -236,7 +245,7 @@ feature 'Edit Person' do
     stub_request(:put, intake_api_url(ExternalRoutes.intake_api_participant_path(marge.id)))
       .and_return(json_body({}.to_json, status: 201))
 
-    visit edit_screening_path(id: screening.id)
+    visit edit_screening_path(id: screening[:id])
 
     within edit_participant_card_selector(marge.id) do
       click_button 'Save'
@@ -246,7 +255,7 @@ feature 'Edit Person' do
       a_request(:put, intake_api_url(ExternalRoutes.intake_api_participant_path(marge.id)))
       .with(
         body: hash_including(
-          screening_id: screening.id,
+          screening_id: screening[:id],
           sensitive: true,
           sealed: false,
           legacy_descriptor: hash_including(
@@ -263,7 +272,7 @@ feature 'Edit Person' do
   end
 
   scenario 'editing and saving a participant for a screening saves only the relevant participant' do
-    visit edit_screening_path(id: screening.id)
+    visit edit_screening_path(id: screening[:id])
     within edit_participant_card_selector(marge.id) do
       within '.card-header' do
         expect(page).to have_content('Sensitive')
@@ -348,7 +357,7 @@ feature 'Edit Person' do
 
   context 'editing social security number (ssn)' do
     scenario 'numbers are formatted correctly' do
-      visit edit_screening_path(id: screening.id)
+      visit edit_screening_path(id: screening[:id])
       within edit_participant_card_selector(homer.id) do
         within '.card-body' do
           fill_in 'Social security number', with: ''
@@ -362,7 +371,7 @@ feature 'Edit Person' do
     end
 
     scenario 'an invalid character is inserted' do
-      visit edit_screening_path(id: screening.id)
+      visit edit_screening_path(id: screening[:id])
       within edit_participant_card_selector(homer.id) do
         within '.card-body' do
           fill_in 'Social security number', with: '12k34?!#adf567890'
@@ -373,7 +382,7 @@ feature 'Edit Person' do
   end
 
   scenario 'removing an address from a participant' do
-    visit edit_screening_path(id: screening.id)
+    visit edit_screening_path(id: screening[:id])
 
     within edit_participant_card_selector(marge.id) do
       within '.card-body' do
@@ -406,7 +415,7 @@ feature 'Edit Person' do
   end
 
   scenario 'when a user modifies languages for an existing participant' do
-    visit edit_screening_path(id: screening.id)
+    visit edit_screening_path(id: screening[:id])
 
     within edit_participant_card_selector(marge.id) do
       within('.col-md-12', text: 'Language(s)') do
@@ -429,7 +438,7 @@ feature 'Edit Person' do
   end
 
   scenario 'when a user tabs out of the language multi-select' do
-    visit edit_screening_path(id: screening.id)
+    visit edit_screening_path(id: screening[:id])
 
     within edit_participant_card_selector(marge.id) do
       within('.col-md-12', text: 'Language(s)') do
@@ -440,7 +449,7 @@ feature 'Edit Person' do
   end
 
   scenario 'canceling edits for a screening participant' do
-    visit edit_screening_path(id: screening.id)
+    visit edit_screening_path(id: screening[:id])
     within edit_participant_card_selector(marge.id) do
       within '.card-body' do
         expect(page).to have_field('Social security number', with: old_ssn)
@@ -463,7 +472,7 @@ feature 'Edit Person' do
   end
 
   scenario 'when a user clicks cancel on edit page' do
-    visit edit_screening_path(id: screening.id)
+    visit edit_screening_path(id: screening[:id])
 
     within edit_participant_card_selector(marge.id) do
       fill_in 'Social security number', with: new_ssn
@@ -476,7 +485,7 @@ feature 'Edit Person' do
   end
 
   scenario 'when a user edits a participants role in a screening' do
-    visit edit_screening_path(id: screening.id)
+    visit edit_screening_path(id: screening[:id])
 
     within edit_participant_card_selector(marge.id) do
       expect(page).to have_react_select_field('Role', with: %w[Victim Perpetrator])
@@ -500,7 +509,7 @@ feature 'Edit Person' do
   end
 
   scenario 'when a user tabs out of the role multi-select' do
-    visit edit_screening_path(id: screening.id)
+    visit edit_screening_path(id: screening[:id])
 
     within edit_participant_card_selector(marge.id) do
       fill_in_react_select 'Role', with: 'Family Member', exit_key: :tab
@@ -512,7 +521,7 @@ feature 'Edit Person' do
     let(:marge_roles) { ['Mandated Reporter'] }
 
     scenario 'the other reporter roles are unavailable' do
-      visit edit_screening_path(id: screening.id)
+      visit edit_screening_path(id: screening[:id])
 
       within edit_participant_card_selector(marge.id) do
         fill_in_react_select('Role', with: 'Non-mandated Reporter')
@@ -526,7 +535,7 @@ feature 'Edit Person' do
   end
 
   scenario 'when a user modifies existing person ethnicity from Yes to nothing selected' do
-    visit edit_screening_path(id: screening.id)
+    visit edit_screening_path(id: screening[:id])
 
     marge.ethnicity = { hispanic_latino_origin: nil, ethnicity_detail: [] }
     stub_request(:put, intake_api_url(ExternalRoutes.intake_api_participant_path(marge.id)))
@@ -559,7 +568,7 @@ feature 'Edit Person' do
     stub_request(:put, intake_api_url(ExternalRoutes.intake_api_participant_path(marge.id)))
       .and_return(json_body(marge.to_json, status: 201))
 
-    visit edit_screening_path(id: screening.id)
+    visit edit_screening_path(id: screening[:id])
     within edit_participant_card_selector(marge.id) do
       expect(page).to have_field('Approximate Age', disabled: true)
       expect(page).to have_field('approximate_age_units', disabled: true)

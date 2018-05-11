@@ -4,16 +4,25 @@ require 'rails_helper'
 require 'spec_helper'
 require 'feature/testing'
 feature 'searching a participant in autocompleter' do
-  let(:existing_screening) { FactoryBot.create(:screening) }
+  let(:existing_screening) do
+    {
+      id: '1',
+      incident_address: {},
+      addresses: [],
+      cross_reports: [],
+      participants: [],
+      allegations: []
+    }
+  end
   let(:date_of_birth) { 15.years.ago.to_date }
   before do
     stub_request(
-      :get, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening.id))
+      :get, ferb_api_url(FerbRoutes.intake_screening_path(existing_screening[:id]))
     ).and_return(json_body(existing_screening.to_json, status: 200))
     stub_empty_relationships
     stub_empty_history_for_screening(existing_screening)
     stub_system_codes
-    visit edit_screening_path(id: existing_screening.id)
+    visit edit_screening_path(id: existing_screening[:id])
   end
 
   context 'search for a person' do
@@ -150,7 +159,7 @@ feature 'searching a participant in autocompleter' do
         stub_person_search(search_term: 'Ma', person_response: search_response)
         stub_request(
           :post,
-          intake_api_url(ExternalRoutes.intake_api_screening_people_path(existing_screening.id))
+          intake_api_url(ExternalRoutes.intake_api_screening_people_path(existing_screening[:id]))
         ).and_return(json_body({}.to_json, status: 201))
 
         within '#search-card', text: 'Search' do
@@ -419,22 +428,24 @@ feature 'searching a participant in autocompleter' do
         assignee_staff_id: nil,
         incident_county: nil,
         indexable: true,
+        incident_address: {},
         addresses: [],
         cross_reports: [],
         participants: [],
-        allegations: []
+        allegations: [],
+        safety_alerts: []
       }
       stub_empty_history_for_screening(new_screening)
       stub_empty_relationships
       stub_request(:post, ferb_api_url(FerbRoutes.intake_screenings_path))
-        .with(body: new_screening.merge(incident_address: {}).as_json(except: :id))
+        .with(body: new_screening.as_json(except: %i[id safety_alerts]))
         .and_return(json_body(new_screening.to_json, status: 201))
 
       stub_request(:get, ferb_api_url(FerbRoutes.screenings_path))
         .and_return(json_body([].to_json, status: 200))
 
       stub_request(:get,
-        intake_api_url(ExternalRoutes.intake_api_screening_path(new_screening[:id])))
+        ferb_api_url(FerbRoutes.intake_screening_path(new_screening[:id])))
         .and_return(json_body(new_screening.to_json, status: 200))
 
       visit root_path
@@ -453,7 +464,7 @@ feature 'searching a participant in autocompleter' do
       stub_empty_history_for_screening(new_screening)
       stub_empty_relationships
       stub_request(:get,
-        intake_api_url(ExternalRoutes.intake_api_screening_path(new_screening[:id])))
+        ferb_api_url(FerbRoutes.intake_screening_path(new_screening[:id])))
         .and_return(json_body(new_screening.to_json, status: 200))
 
       page.go_forward

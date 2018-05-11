@@ -5,9 +5,18 @@ require 'spec_helper'
 
 feature 'Participant Address' do
   let(:marge) { FactoryBot.create(:participant) }
-  let(:screening) { FactoryBot.create(:screening, participants: [marge]) }
+  let(:screening) do
+    {
+      id: '1',
+      incident_address: {},
+      cross_reports: [],
+      allegations: [],
+      safety_alerts: [],
+      participants: [marge.as_json.symbolize_keys]
+    }
+  end
   before do
-    stub_request(:get, intake_api_url(ExternalRoutes.intake_api_screening_path(screening.id)))
+    stub_request(:get, ferb_api_url(FerbRoutes.intake_screening_path(screening[:id])))
       .and_return(json_body(screening.to_json, status: 200))
     stub_request(
       :put, intake_api_url(ExternalRoutes.intake_api_participant_path(marge.id))
@@ -17,7 +26,7 @@ feature 'Participant Address' do
   end
 
   scenario 'adding a new address to a participant' do
-    visit edit_screening_path(id: screening.id)
+    visit edit_screening_path(id: screening[:id])
 
     within edit_participant_card_selector(marge.id) do
       click_button 'Add new address'
@@ -49,7 +58,7 @@ feature 'Participant Address' do
   end
 
   scenario 'list of address types is correct' do
-    visit edit_screening_path(id: screening.id)
+    visit edit_screening_path(id: screening[:id])
     within edit_participant_card_selector(marge.id) do
       click_button 'Add new address'
       expect(page).to have_select('Address Type', options: [

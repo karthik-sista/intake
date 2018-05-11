@@ -38,21 +38,25 @@ feature 'Show Screening' do
     },
     languages: %w[Korean Lao Hawaiian]
   )
-  existing_screening = FactoryBot.create(
-    :screening,
-    participants: [existing_participant]
-  )
+  existing_screening = {
+    id: '1',
+    incident_address: {},
+    cross_reports: [],
+    allegations: [],
+    safety_alerts: [],
+    participants: [existing_participant.as_json.symbolize_keys]
+  }
 
   before do
     stub_request(
-      :get, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening.id))
+      :get, ferb_api_url(FerbRoutes.intake_screening_path(existing_screening[:id]))
     ).and_return(json_body(existing_screening.to_json, status: 200))
     stub_empty_history_for_screening(existing_screening)
     stub_empty_relationships
   end
 
   scenario 'showing existing participant' do
-    visit screening_path(id: existing_screening.id)
+    visit screening_path(id: existing_screening[:id])
 
     within show_participant_card_selector(existing_participant.id) do
       within '.card-header' do
@@ -95,16 +99,16 @@ feature 'Show Screening' do
   context 'has participant of hispanic/latino origin but with no ethnicity details' do
     before do
       existing_participant.ethnicity[:ethnicity_detail] = []
-      existing_screening.participants = [existing_participant]
+      existing_screening[:participants] = [existing_participant]
       stub_request(
-        :get, intake_api_url(ExternalRoutes.intake_api_screening_path(existing_screening.id))
+        :get, ferb_api_url(FerbRoutes.intake_screening_path(existing_screening[:id]))
       ).and_return(json_body(existing_screening.to_json, status: 200))
       stub_empty_history_for_screening(existing_screening)
       stub_empty_relationships
     end
 
     scenario('display only hispanic/latino origin') do
-      visit screening_path(id: existing_screening.id)
+      visit screening_path(id: existing_screening[:id])
       within show_participant_card_selector(existing_participant.id) do
         within '.card-body' do
           expect(page).to have_content('Hispanic/Latino Origin Yes')
@@ -121,21 +125,25 @@ feature 'Show Screening' do
       approximate_age: 10,
       approximate_age_units: 'Months'
     )
-    approximate_screening = FactoryBot.create(
-      :screening,
-      participants: [approximate_participant]
-    )
+    approximate_screening = {
+      id: '1',
+      incident_address: {},
+      cross_reports: [],
+      allegations: [],
+      safety_alerts: [],
+      participants: [approximate_participant.as_json.symbolize_keys]
+    }
 
     before do
       stub_request(
-        :get, intake_api_url(ExternalRoutes.intake_api_screening_path(approximate_screening.id))
+        :get, ferb_api_url(FerbRoutes.intake_screening_path(approximate_screening[:id]))
       ).and_return(json_body(approximate_screening.to_json, status: 200))
       stub_empty_history_for_screening(approximate_screening)
       stub_empty_relationships
     end
 
     scenario 'shows approximate age and hides date of birth' do
-      visit screening_path(id: approximate_screening.id)
+      visit screening_path(id: approximate_screening[:id])
 
       within show_participant_card_selector(approximate_participant.id) do
         within '.card-body' do
@@ -148,7 +156,7 @@ feature 'Show Screening' do
   end
 
   scenario 'editing an existing participant on the show page' do
-    visit screening_path(id: existing_screening.id)
+    visit screening_path(id: existing_screening[:id])
 
     within show_participant_card_selector(existing_participant.id) do
       click_link 'Edit person'

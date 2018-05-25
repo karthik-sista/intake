@@ -53,7 +53,12 @@ const PersonDemographicsForm = ({
           disabled={approximateAgeIsDisabled}
         >
           <option key='' value='' />
-          {Object.keys(APPROXIMATE_AGE_UNITS).map((unit) => <option key={unit} value={unit}>{APPROXIMATE_AGE_UNITS[unit]}</option>)}
+          {Object.keys(APPROXIMATE_AGE_UNITS).map((unit) => {
+            const [first, ...rest] = unit
+            const realUnit = [first.toUpperCase(), ...rest].join('')
+            return (<option key={unit} value={unit}>{realUnit}</option>)
+          })
+          }
         </select>
       </div>
       <SelectField

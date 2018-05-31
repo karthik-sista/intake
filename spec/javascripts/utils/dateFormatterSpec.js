@@ -32,7 +32,11 @@ describe('dateTimeFormatter', () => {
   })
 
   it("displays date in 'MM/DD/YYYY h:mm A' when passed date in ISO 8601 format", () => {
-    expect(dateTimeFormatter('2011-01-21T16:00:00.000Z')).toEqual('01/21/2011 9:00 AM')
+    expect(dateTimeFormatter('2011-01-21T16:00:00.000Z')).toEqual('01/21/2011 8:00 AM')
+  })
+
+  it("respects daylight savings time", () => {
+    expect(dateTimeFormatter('2011-07-21T16:00:00.000Z')).toEqual('07/21/2011 9:00 AM')
   })
 })
 

@@ -3,13 +3,44 @@ import FormField from 'common/FormField'
 import PropTypes from 'prop-types'
 import React from 'react'
 import _ from 'lodash'
-import moment from 'moment'
+import moment from 'moment-timezone'
 import momentLocalizer from 'react-widgets/lib/localizers/moment'
 
 momentLocalizer(moment)
 
+const dateFormats = [
+  'M/D/YY',
+  'MM/D/YY',
+  'M/DD/YY',
+  'MM/DD/YYYY',
+  'M-D-YY',
+  'MM-D-YY',
+  'M-DD-YY',
+  'MM-DD-YY',
+  'M-DD-YYYY',
+  'M-D YY',
+  'MMDDYY',
+]
+
+const dateTimeFormats = [
+  'M-DD-YY h:mm A',
+  'M-D-YY h:mm A',
+  'MM-DD-YY h:mm A',
+  'M-D-YYYY hh:mm A',
+  'M/DD/YY h:mm A',
+  'MM/DD/YY h:mm A',
+  'M/DD/YYYY hh:mm A',
+  'M-D-YY h A',
+  'M-D-YY hmm',
+  'M-D-YY h',
+  'MMDDYYYYhmm',
+  'MMDDYYYYhp',
+  'M-D YY h',
+  'YYYY-MM-DDTh:mm:ss.fffZ',
+]
+
 const parseDate = (date) => (
-  moment(date, ['YYYY-MM-DD', 'MM/DD/YYYY h:mm A', moment.ISO_8601])
+  moment.tz(date, [...dateFormats, ...dateTimeFormats], 'America/Los_Angeles').local()
 )
 
 const proxyOnChange = (onChange, hasTime) => ((date) => {

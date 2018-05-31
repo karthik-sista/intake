@@ -123,7 +123,7 @@ describe('DateField', () => {
     it('calls the passed function with a value', () => {
       const event = {target: {value: '12/31/1999 12:59 PM'}}
       dateTimePicker.props().onBlur(event)
-      expect(onBlur).toHaveBeenCalledWith('1999-12-31T19:59:00.000Z')
+      expect(onBlur).toHaveBeenCalledWith('1999-12-31T20:59:00.000Z')
     })
 
     it('calls the passed function with null if the value is empty', () => {
@@ -269,7 +269,7 @@ describe('DateField', () => {
       const input = mountDateField({value: '123', hasTime: true, onChange}).find('input')
       input.simulate('change', {target: {value}})
       input.simulate('blur', {target: {value}})
-      expect(onChange.calls.mostRecent().args[0]).toEqual('2015-01-01T21:00:00.000Z')
+      expect(onChange.calls.mostRecent().args[0]).toEqual('2015-01-01T22:00:00.000Z')
     })
   })
 })

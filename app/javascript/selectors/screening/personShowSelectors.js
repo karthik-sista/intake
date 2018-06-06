@@ -108,12 +108,24 @@ export const getErrorsSelector = (state, personId) => {
   })
 }
 
-const getRaces = (person) => person.get('races') && person.get('races').map((raceInformation) => {
-  const race = raceInformation.get('race')
-  const raceDetail = raceInformation.get('race_detail')
-  const raceDetailText = raceDetail ? ` - ${raceDetail}` : ''
-  return `${race}${raceDetailText}`
-}).join(', ')
+const getPersonRaces = (person) => person.get('races') || List()
+
+const getRaces = (person) => {
+  const personRaces = getPersonRaces(person).map((raceInformation) => {
+    const race = raceInformation.get('race')
+    const raceDetail = raceInformation.get('race_detail')
+    const raceDetailText = raceDetail ? ` - ${raceDetail}` : ''
+    return `${race}${raceDetailText}`
+  })
+
+  const races = Maybe.of(personRaces)
+    .map((races) => races.map(Maybe.of))
+    .map((races) => races.update(0, (maybe) => maybe.map((value) => (value + ' (primary)'))))
+    .map((races) => races.map((maybe) => maybe.valueOrElse('').join(', ')))
+    .valueOrElse('')
+
+  return races
+}
 
 const getEthnicity = (person) => {
   const {hispanic_latino_origin: hispanicLatinoOrigin, ethnicity_detail} = person.toJS().ethnicity || {}

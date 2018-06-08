@@ -55,7 +55,6 @@ function onCreateRelationship() {
 }
 
 function onChangeRelationshipType() {
-  ({target: {value}}) => onChange('report_type', value)
   console.log("Relationship type changed")
 }
 
@@ -80,8 +79,7 @@ function selectFieldFormat(cell, row) {
   return <SelectField
       id='change_relationship_type'
       label=''
-      onChange={({target: {value}}) => onChange('change_relationship_type',
-          value)}>
+      onChange={onChangeRelationshipType}>
     <option key=''/>
     {RelationshipTypes.map((relationship) => <option key={relationship.value}
                                                      value={relationship.value}>{relationship.label}</option>)}

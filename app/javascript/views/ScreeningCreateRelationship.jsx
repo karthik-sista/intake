@@ -62,14 +62,15 @@ function onChangeRelationshipType() {
 const ModalTable = () => {
   return (
       <BootstrapTable data={mockData}>
-        <TableHeaderColumn dataField='person_left' isKey={true}
-                           dataAlign="center">Focus Person</TableHeaderColumn>
+        <TableHeaderColumn dataField='related_person' isKey={true}
+                           dataAlign="center">Related
+          Person</TableHeaderColumn>
         <TableHeaderColumn dataField='name' dataFormat={selectFieldFormat}
                            style={dropDownStyle}>
           Relationships<br/>
           <div class="text-helper">Related Person / Primary Person</div>
         </TableHeaderColumn>
-        <TableHeaderColumn dataField='focus_child' dataAlign="center">Related
+        <TableHeaderColumn dataField='focus_person' dataAlign="center">Focus
           Person</TableHeaderColumn>
       </BootstrapTable>
   );
@@ -82,16 +83,16 @@ function selectFieldFormat(cell, row) {
       onChange={({target: {value}}) => onChange('change_relationship_type',
           value)}>
     <option key=''/>
-      {RelationshipTypes.map((relationship) => <option key={relationship.value}
-                                                       value={relationship.value}>{relationship.label}</option>)}
+    {RelationshipTypes.map((relationship) => <option key={relationship.value}
+                                                     value={relationship.value}>{relationship.label}</option>)}
   </SelectField>;
 }
 
 const mockData = [
   {
-    "person_left": "Martin",
+    "related_person": "Martin",
     "name": "",
-    "focus_child": "Anita"
+    "focus_person": "Anita"
   }
 ]
 

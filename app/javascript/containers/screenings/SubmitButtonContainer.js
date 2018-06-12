@@ -20,7 +20,7 @@ function mapStateToProps(state) {
 
 function mapDispatchToProps(dispatch) {
   const actions = {
-    submitScreening
+    submitScreening,
   }
   return bindActionCreators(actions, dispatch)
 }

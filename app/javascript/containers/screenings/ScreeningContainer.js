@@ -3,11 +3,11 @@ import Screening from 'views/Screening'
 import {bindActionCreators} from 'redux'
 import {
   getScreeningTitleSelector,
-  getScreeningIsReadOnlySelector
+  getScreeningIsReadOnlySelector,
 } from 'selectors/screeningSelectors'
 import {
   getScreeningSubmissionErrorsSelector,
-  getApiValidationErrorsSelector
+  getApiValidationErrorsSelector,
 } from 'selectors/errorsSelectors'
 import {
   fetchHistoryOfInvolvements,
@@ -16,9 +16,11 @@ import {
 import {clearRelationships} from 'actions/relationshipsActions'
 import {clearScreening} from 'actions/screeningActions'
 import {clearPeople} from 'actions/personCardActions'
+import {setPageMode} from 'actions/screeningPageActions'
+import {fetchScreening} from 'actions/screeningActions'
 
 function mapStateToProps(state, ownProps) {
-  const { params: id } = ownProps
+  const {params: {id, mode}} = ownProps
   return {
     screeningTitle: getScreeningTitleSelector(state),
     screeningId: id,
@@ -26,8 +28,8 @@ function mapStateToProps(state, ownProps) {
     referralId: state.getIn(['screening', 'referral_id']),
     hasApiValidationErrors: Boolean(getApiValidationErrorsSelector(state).size),
     submitReferralErrors: getScreeningSubmissionErrorsSelector(state).toJS(),
-    participantIds: state.get('participants').map((particpant) => (participant.get('id'))).toJS(),
-    mode: state.getIn(['screeningPage', 'mode']),
+    participantIds: state.get('participants').map((participant) => (participant.get('id'))).toJS(),
+    mode: mode || state.getIn(['screeningPage', 'mode']),
   }
 }
 
@@ -52,7 +54,7 @@ function mergeProps(stateProps, dispatchProps, ownProps) {
           fetchHistoryOfInvolvements,
           fetchScreening,
         } = dispatchProps
-        const {mode, id} = stateProps
+        const {mode, screeningId: id} = stateProps
         setPageMode(mode || 'show')
         fetchScreening(id)
         fetchHistoryOfInvolvements('screenings', id)
@@ -75,4 +77,4 @@ function mergeProps(stateProps, dispatchProps, ownProps) {
   }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(Screening)
+export default connect(mapStateToProps, mapDispatchToProps, mergeProps)(Screening)

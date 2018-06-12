@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types'
 import PersonSearchFormContainer from 'containers/common/PersonSearchFormContainer'
+import React from 'react'
 
 const PersonSearchCard = ({}) => (
   <PersonSearchFormContainer

@@ -4,7 +4,7 @@ import PropTypes from 'prop-types'
 
 import nameFormatter from 'utils/nameFormatter'
 
-const ScreeningSideBar = (props) => (
+const ScreeningSideBar = ({participants}) => (
   <div className='col-xs-4 col-md-3 hide-mobile hidden-print'>
     <SideBar>
       <NavLinks>
@@ -12,7 +12,7 @@ const ScreeningSideBar = (props) => (
         <NavLink key={1} text='People & Roles' href='#search-card-anchor'>
           <NavLinks nested={true} >
             <div className='nested-block'>
-              {props.participants.map(({id, first_name, last_name, name_suffix}) =>
+              {participants && participants.map(({id, first_name, last_name, name_suffix}) =>
                 <NavLink
                   key={id}
                   text={nameFormatter({first_name, last_name, name_suffix})}

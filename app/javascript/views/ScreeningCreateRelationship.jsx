@@ -1,109 +1,17 @@
-import React from 'react';
-import {DropDownField, ModalComponent} from 'react-wood-duck';
-import {BootstrapTable, TableHeaderColumn} from 'react-bootstrap-table';
-import SelectField from "../common/SelectField";
-import "react-bootstrap-table/css/react-bootstrap-table.css";
-import "../../assets/stylesheets/screening_relationship.scss";
+import React from 'react'
+import {ModalComponent} from 'react-wood-duck'
+import {BootstrapTable, TableHeaderColumn} from 'react-bootstrap-table'
+import SelectField from '../common/SelectField'
 
-const dropDownStyle = "label[for=\"change_relationship_type\"] { display: none;}\n";
-
-export default class ScreeningCreateRelationship extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {show: false};
-    this.handleShowModal = this.handleShowModal.bind(this);
-    this.closeModal = this.closeModal.bind(this);
-  }
-
-  handleShowModal() {
-    this.setState({
-      show: !this.state.show,
-    });
-  }
-
-  closeModal() {
-    this.setState({
-      show: false,
-    });
-  }
-
-  render() {
-    return (
-        <div className='container'>
-          <button onClick={this.handleShowModal}>
-            Action
-          </button>
-          <ModalComponent
-              closeModal={this.closeModal}
-              showModal={this.state.show}
-              modalBody={ModalTable()}
-              modalFooter={ModalFooter()}
-              modalSize='large'
-              modalTitle={ModalTitle(this.props.name)}
-          />
-        </div>
-    )
-  }
-}
-
-const ModalTitle = (name) => {
-  return <div>Step 2 of 2: Choose Relationship Type to "{name}"</div>
-}
-
-function onCreateRelationship() {
-  console.log("CREATED")
-}
-
-function onChangeRelationshipType() {
-  console.log("Relationship type changed")
-}
-
-const ModalTable = () => {
-  return (
-      <BootstrapTable data={mockData}>
-        <TableHeaderColumn dataField='related_person' isKey={true}
-                           dataAlign="center">Related
-          Person</TableHeaderColumn>
-        <TableHeaderColumn dataField='name' dataFormat={selectFieldFormat}
-                           style={dropDownStyle}>
-          Relationships<br/>
-          <div class="text-helper">Related Person / Primary Person</div>
-        </TableHeaderColumn>
-        <TableHeaderColumn dataField='focus_person' dataAlign="center">Focus
-          Person</TableHeaderColumn>
-      </BootstrapTable>
-  );
-}
-
-function selectFieldFormat(cell, row) {
-  return <SelectField
-      id='change_relationship_type'
-      label=''
-      onChange={onChangeRelationshipType}>
-    <option key=''/>
-    {RelationshipTypes.map((relationship) => <option key={relationship.value}
-                                                     value={relationship.value}>{relationship.label}</option>)}
-  </SelectField>;
-}
-
+const dropDownStyle = 'label[for="change_relationship_type"] { display: none;}\n'
 const mockData = [
   {
-    "related_person": "Martin",
-    "name": "",
-    "focus_person": "Anita"
-  }
+    related_person: 'Martin',
+    name: '',
+    focus_person: 'Anita',
+  },
 ]
-
-const ModalFooter = () => {
-  return <button aria-label='Create Relationship'
-                 className='pull-right btn btn-primary'
-                 onClick={onCreateRelationship}
-  >
-    Create Relationship
-  </button>
-}
-
-export const RelationshipTypes = [
+const RelationshipTypes = [
   {value: '175', label: 'Aunt/Nephew (Maternal)'},
   {value: '176', label: 'Aunt/Nephew (Paternal)'},
   {value: '177', label: 'Aunt/Niece (Maternal)'},
@@ -234,4 +142,84 @@ export const RelationshipTypes = [
   {value: '5994', label: 'Residential Facility Staff/Child'},
   {value: '6360', label: 'Son/Mother (Presumed)'},
   {value: '6361', label: 'Mother/Son (Presumed)'},
-];
+]
+
+export default class ScreeningCreateRelationship extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = {show: false}
+    this.handleShowModal = this.handleShowModal.bind(this)
+    this.closeModal = this.closeModal.bind(this)
+    this.modalTable = this.modalTable.bind(this)
+  }
+
+  handleShowModal() {
+    this.setState({
+      show: !this.state.show,
+    })
+  }
+
+  closeModal() {
+    this.setState({
+      show: false,
+    })
+  }
+
+  modalTable() {
+    return (
+      <BootstrapTable data={mockData}>
+        <TableHeaderColumn dataField='related_person' isKey={true}
+          dataAlign='center'
+        >Related Person</TableHeaderColumn>
+        <TableHeaderColumn dataField='name' dataFormat={this.selectFieldFormat} style={dropDownStyle}> Relationships<br/>
+          <div className='text-helper'>Related Person / Primary Person</div>
+        </TableHeaderColumn>
+        <TableHeaderColumn dataField='focus_person' dataAlign='center'>FocusPerson</TableHeaderColumn>
+      </BootstrapTable>
+    )
+  }
+
+  modalTitle(name) {
+    return (<b>
+      Step 2 of 2: Choose Relationship Type to {name}
+    </b>)
+  }
+
+  selectFieldFormat() {
+    return (
+      <SelectField
+        id='change_relationship_type'
+        label=''
+      >
+        <option key=''/>
+        {RelationshipTypes.map((relationship) => <option key={relationship.value} value={relationship.value}>{relationship.label}</option>)}
+      </SelectField>
+    )
+  }
+
+  modalFooter() {
+    return (
+      <button aria-label='Create Relationship'className='pull-right btn btn-primary'>
+      Create Relationship
+      </button>
+    )
+  }
+
+  render() {
+    return (
+      <div className='container'>
+        <button onClick={this.handleShowModal}>
+            Action
+        </button>
+        <ModalComponent
+          closeModal={this.closeModal}
+          showModal={this.state.show}
+          modalBody={this.modalTable()}
+          modalFooter={this.modalFooter()}
+          modalSize='large'
+          modalTitle={this.modalTitle(name)}
+        />
+      </div>
+    )
+  }
+}

@@ -6,9 +6,9 @@ import SelectField from '../common/SelectField'
 const dropDownStyle = 'label[for="change_relationship_type"] { display: none;}\n'
 const mockData = [
   {
-    related_person: 'Martin',
+    related_person: '',
     name: '',
-    focus_person: 'Anita',
+    focus_person: '',
   },
 ]
 const RelationshipTypes = [

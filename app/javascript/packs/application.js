@@ -18,6 +18,7 @@ import routes from 'common/routes'
 import 'react-bootstrap-table/css/react-bootstrap-table.css'
 import 'bootstrap/dist/css/bootstrap'
 import 'react-wood-duck/dist/styles/application'
+import 'react-bootstrap-table/css/react-bootstrap-table.css'
 import '../../assets/stylesheets/helpers'
 import '../../assets/stylesheets/accessibility'
 import '../../assets/stylesheets/form'
@@ -32,6 +33,7 @@ import '../../assets/stylesheets/ie'
 import '../../assets/stylesheets/google-api'
 import '../../assets/stylesheets/page-error'
 import '../../assets/stylesheets/shame_overrides'
+import '../../assets/stylesheets/screening_relationship.scss'
 
 if (document.getElementById('app')) {
   ReactDOM.render(routes, document.getElementById('app'))

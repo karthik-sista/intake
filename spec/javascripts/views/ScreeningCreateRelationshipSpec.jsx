@@ -11,4 +11,14 @@ describe('ScreeningCreateRelationship', () => {
   it('has a ModalComponent', () => {
     expect(wrapper.find('ModalComponent').length).toBe(1)
   })
+
+  it('simulate a click on button and show modal', () => {
+    wrapper.find('button').simulate('click')
+    expect(wrapper.instance().state.show).toBe(true)
+  })
+
+  it('closes the modal', () => {
+    wrapper.instance().closeModal()
+    expect(wrapper.instance().state.show).toEqual(false)
+  })
 })

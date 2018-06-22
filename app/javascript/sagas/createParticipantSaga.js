@@ -29,10 +29,12 @@ export function* sendPersonPayload(person) {
 
 export function* createParticipant({payload: {person}}) {
   try {
-    const response = yield* sendPersonPayload(person)
+    let response = yield* sendPersonPayload(person)
+    response = {... response, newly_created_person: true}
     yield put(createPersonSuccess(response))
     const clientIds = yield select(selectClientIds)
-    yield put(fetchRelationships(clientIds))
+    const fetchedRelationships = fetchRelationships(clientIds)
+    yield put(fetchedRelationships)
     const screeningId = yield select(getScreeningIdValueSelector)
     yield put(fetchHistoryOfInvolvements('screenings', screeningId))
   } catch (error) {

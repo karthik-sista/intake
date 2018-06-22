@@ -20,7 +20,10 @@ const createRelationsData = (firstName, data) => {
   return relationData
 }
 
-export const Relationships = ({people, onClick, screeningId, isScreening, pendingPeople = []}) => (
+export const Relationships = ({people, onClick, screeningId, isScreening, pendingPeople = []}) => {
+  console.log(`relationshis - people ${JSON.stringify(people)}`)
+  return (
+  
   <div className='card-body no-pad-top'>
     {
       isScreening && people.map((person, index) => (
@@ -31,6 +34,7 @@ export const Relationships = ({people, onClick, screeningId, isScreening, pendin
               <span>
                 <RelationCard
                   firstName={person.name}
+                  lastName={person.newly_created_person}
                   data={person.relationships}
                   tableActions={(cell, row) => (actionsMenu(row, pendingPeople, isScreening, screeningId, onClick)
                   )}
@@ -87,7 +91,7 @@ export const Relationships = ({people, onClick, screeningId, isScreening, pendin
       ))
     }
   </div>
-)
+)}
 
 Relationships.propTypes = {
   isScreening: PropTypes.bool,

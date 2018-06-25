@@ -13,4 +13,13 @@ class RelationshipsRepository
       clientIds: client_ids
     ).body
   end
+
+  def self.update(security_token, save_relationship)
+    FerbAPI.make_api_call(
+      security_token,
+      FerbRoutes.save_relationship_path,
+      :post,
+      saveRelationship: save_relationship
+    ).body
+  end
 end

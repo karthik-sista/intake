@@ -44,12 +44,27 @@ describe RelationshipsRepository do
       }]
     end
 
+    let(:save_relationship) do
+      {
+        id: '12345',
+        client_id: 'ZXY123',
+        relative_id: 'ABC987',
+        relationship_type: '190',
+        absent_parent_indicator: false,
+        same_home_status: false
+      }
+    end
+
     let(:single_response) do
       double(:response, body: [relationships.first])
     end
 
     let(:full_response) do
       double(:response, body: relationships)
+    end
+
+    let(:save_relationship_response) do
+      double(:response, body: save_relationship)
     end
 
     it 'should return an empty list when no relationships found' do
@@ -86,4 +101,35 @@ describe RelationshipsRepository do
       expect(relationships).to eq(relationships)
     end
   end
+
+    describe '.update' do
+      let(:save_relationship) do
+        {
+          id: '12345',
+          client_id: 'ZXY123',
+          relative_id: 'ABC987',
+          relationship_type: '190',
+          absent_parent_indicator: false,
+          same_home_status: false
+        }
+      end
+
+      let(:save_relationship_response) do
+        double(:response, body: save_relationship)
+      end
+
+      it 'should update the relationship' do
+        expect(FerbAPI).to receive(:make_api_call)
+          .with(
+            security_token,
+            '/screening_relationships',
+            :post,
+            saveRelationship: %w[EwsPYbG07n ABCDEFGHIJ ZYXWVUTSRQ]
+          ).and_return(save_relationship_response)
+
+        save_relationships = described_class.update(security_token, %w[EwsPYbG07n ABCDEFGHIJ ZYXWVUTSRQ])
+
+        expect(save_relationships).to eq(save_relationships)
+      end
+    end
 end

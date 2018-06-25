@@ -16,7 +16,11 @@ const actionsMenu = (row, pendingPeople, isScreening, screeningId, onClick) =>
 
 const createRelationsData = (firstName, data) => {
   const relationData = []
-  data.map((rec) => relationData.push({focus_person: firstName, related_person: rec.name}))
+  if (data.length > 0) {  
+    data.map((rec) => relationData.push({focus_person: firstName, related_person: rec.name}))
+    } else {
+      relationData.push({focus_person: firstName, related_person: null})
+    }  
   return relationData
 }
 
@@ -48,7 +52,8 @@ export const Relationships = ({people, onClick, screeningId, isScreening, pendin
             <div className='row'>
               <div className='col-md-9' />
               <div className='col-md-3'>
-                <ScreeningCreateRelationship data={createRelationsData(person.name, person.relationships)}/>
+                <ScreeningCreateRelationship showModal={person.newly_created_person} data={createRelationsData(person.name, person.relationships)}/>
+                {person.newly_created_person=false }
               </div>
             </div>
           </div>

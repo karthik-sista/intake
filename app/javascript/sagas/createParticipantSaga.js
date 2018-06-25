@@ -27,10 +27,15 @@ export function* sendPersonPayload(person) {
   return yield call(post, '/api/v1/participants', participantPayload)
 }
 
+function markNewlyCreatedPerson(person) {
+  const newlyCreatePerson = {... person, newly_created_person: true}
+  console.log(`in function newlycreatedperson ${newlyCreatePerson}`)
+  return newlyCreatePerson
+}
 export function* createParticipant({payload: {person}}) {
   try {
     let response = yield* sendPersonPayload(person)
-    response = {... response, newly_created_person: true}
+    response = markNewlyCreatedPerson(response)
     yield put(createPersonSuccess(response))
     const clientIds = yield select(selectClientIds)
     const fetchedRelationships = fetchRelationships(clientIds)

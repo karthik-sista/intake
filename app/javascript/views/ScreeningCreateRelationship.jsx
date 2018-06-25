@@ -140,7 +140,7 @@ const RelationshipTypes = [
 export default class ScreeningCreateRelationship extends React.Component {
   constructor(props) {
     super(props)
-    this.state = {show: false}
+    this.state = {show: this.props.showModal}
     this.handleShowModal = this.handleShowModal.bind(this)
     this.closeModal = this.closeModal.bind(this)
     this.modalTable = this.modalTable.bind(this)
@@ -218,6 +218,7 @@ export default class ScreeningCreateRelationship extends React.Component {
 }
 
 ScreeningCreateRelationship.propTypes = {
+  showModal: PropTypes.bool,
   data: PropTypes.arrayOf(PropTypes.shape({
     focus_person: PropTypes.string,
     related_person: PropTypes.string,

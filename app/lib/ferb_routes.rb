@@ -50,5 +50,9 @@ class FerbRoutes
     def history_of_involvements_path
       '/clients/history_of_involvements'
     end
+
+    def save_relationship_path
+      '/screening_relationships'
+    end
   end
 end

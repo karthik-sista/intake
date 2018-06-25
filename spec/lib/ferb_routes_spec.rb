@@ -49,6 +49,14 @@ describe FerbRoutes do
     end
   end
 
+  describe '.save_relationship_path' do
+    it 'returns the base path' do
+      expect(described_class.save_relationship_path).to eq(
+        '/screening_relationships'
+      )
+    end
+  end
+
   describe '.lov_path' do
     it 'returns /lov' do
       expect(described_class.lov_path).to eq('/lov')

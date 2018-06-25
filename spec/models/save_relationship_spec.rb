@@ -11,7 +11,7 @@ describe SaveRelationship do
         relative_id: 'ABC987',
         relationship_type: '190',
         absent_parent_indicator: false,
-        same_home_status: false,
+        same_home_status: false
       }.with_indifferent_access
       expect(described_class.new(attributes).as_json).to eq({
         id: '12345',
@@ -19,7 +19,7 @@ describe SaveRelationship do
         relative_id: 'ABC987',
         relationship_type: '190',
         absent_parent_indicator: false,
-        same_home_status: false,
+        same_home_status: false
       }.with_indifferent_access)
     end
   end

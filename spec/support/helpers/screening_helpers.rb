@@ -31,14 +31,9 @@ module ScreeningHelpers
   def stub_empty_history_for_screening(screening, response: { cases: [],
                                                               referrals: [],
                                                               screenings: [] })
-    screening_id = if screening.is_a?(Hash)
-                     screening[:id]
-                   else
-                     screening.id
-                   end
     stub_request(
       :get,
-      ferb_api_url(FerbRoutes.screening_history_of_involvements_path(screening_id))
+      ferb_api_url(FerbRoutes.screening_history_of_involvements_path(screening[:id]))
     ).and_return(json_body(response.to_json, status: 200))
   end
 

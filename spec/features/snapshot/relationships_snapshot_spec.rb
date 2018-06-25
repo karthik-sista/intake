@@ -31,13 +31,22 @@ feature 'Snapshot relationship card' do
       end
     end
 
-    let(:participant) { FactoryBot.create(:participant) }
+    let(:participant) do
+      {
+        id: '1',
+        first_name: 'Joe',
+        last_name: 'Campbell',
+        legacy_descriptor: {
+          legacy_id: '1'
+        }
+      }
+    end
     let(:relationships) do
       [
         {
-          id: participant.id.to_s,
-          first_name: participant.first_name,
-          last_name: participant.last_name,
+          id: participant[:id].to_s,
+          first_name: participant[:first_name],
+          last_name: participant[:last_name],
           relationships: [{
             related_person_id: nil,
             related_person_legacy_id: '789',
@@ -62,7 +71,7 @@ feature 'Snapshot relationship card' do
     end
 
     before do
-      stub_empty_history_for_clients([participant.legacy_descriptor.legacy_id])
+      stub_empty_history_for_clients([participant[:legacy_descriptor][:legacy_id]])
 
       search_response = PersonSearchResponseBuilder.build do |response|
         response.with_total(1)
@@ -70,7 +79,7 @@ feature 'Snapshot relationship card' do
           [
             PersonSearchResultBuilder.build do |builder|
               builder.with_first_name('Marge')
-              builder.with_legacy_descriptor(participant.legacy_descriptor)
+              builder.with_legacy_descriptor(participant[:legacy_descriptor])
             end
           ]
         end
@@ -79,10 +88,10 @@ feature 'Snapshot relationship card' do
       stub_person_search(search_term: 'Ma', person_response: search_response)
       stub_request(
         :get,
-        ferb_api_url(FerbRoutes.client_authorization_path(participant.legacy_descriptor.legacy_id))
+        ferb_api_url(FerbRoutes.client_authorization_path(participant[:legacy_descriptor][:legacy_id]))
       ).and_return(json_body('', status: 200))
       stub_person_find(
-        id: participant.legacy_descriptor.legacy_id,
+        id: participant[:legacy_descriptor][:legacy_id],
         person_response: search_response
       )
 
@@ -90,7 +99,7 @@ feature 'Snapshot relationship card' do
         :get,
         ferb_api_url(
           FerbRoutes.relationships_path
-        ) + "?clientIds=#{participant.legacy_descriptor.legacy_id}"
+        ) + "?clientIds=#{participant[:legacy_descriptor][:legacy_id]}"
       ).and_return(json_body(relationships.to_json, status: 200))
 
       visit snapshot_path
@@ -110,7 +119,7 @@ feature 'Snapshot relationship card' do
           :get,
           ferb_api_url(
             FerbRoutes.relationships_path
-          ) + "?clientIds=#{participant.legacy_descriptor.legacy_id}"
+          ) + "?clientIds=#{participant[:legacy_descriptor][:legacy_id]}"
         )
       ).to have_been_made
 

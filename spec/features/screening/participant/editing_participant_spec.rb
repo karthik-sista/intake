@@ -6,17 +6,32 @@ feature 'Edit Person' do
   let(:new_ssn) { '123-23-1234' }
   let(:old_ssn) { '555-56-7895' }
   let(:marge_roles) { %w[Victim Perpetrator] }
-  let(:phone_number) { FactoryBot.create(:phone_number, number: '1234567890', type: 'Work') }
+  let(:phone_number) do
+    {
+      id: '1',
+      type: 'Work',
+      number: '1234567890'
+    }
+  end
   let(:marge) do
-    FactoryBot.create(
-      :participant,
-      :with_complete_address,
+    {
+      id: '1',
+      legacy_descriptor: {
+        id: '1',
+        legacy_id: '1',
+        legacy_last_updated: '2001-09-11',
+        legacy_table_description: 'Client',
+        legacy_table_name: 'CLIENT_T',
+        legacy_ui_id: '1'
+      },
       phone_numbers: [phone_number],
       middle_name: 'Jacqueline',
       name_suffix: 'sr',
       ssn: old_ssn,
       sealed: false,
       sensitive: true,
+      date_of_birth: '2001-09-12',
+      gender: 'male',
       races: [
         { race: 'Asian', race_detail: 'Hmong' }
       ],
@@ -25,13 +40,38 @@ feature 'Edit Person' do
       ethnicity: {
         hispanic_latino_origin: 'Yes',
         ethnicity_detail: ['Mexican']
-      }
-    )
+      },
+      addresses: [{
+        id: '2',
+        street_address: '1234 C Street',
+        city: 'city',
+        state: 'CA',
+        zip: '12345',
+        type: 'Home'
+      }]
+    }
   end
   let(:marge_formatted_name) do
-    "#{marge.first_name} #{marge.middle_name} #{marge.last_name}, #{marge.name_suffix.humanize}"
+    full_name = [marge[:first_name], marge[:middle_name], marge[:last_name]].compact.join(' ')
+    "#{full_name}, #{marge[:name_suffix].humanize}"
   end
-  let(:homer) { FactoryBot.create(:participant, :with_complete_address, ssn: nil) }
+  let(:homer) do
+    {
+      id: '2',
+      ssn: nil,
+      addresses: [{
+        id: '1',
+        street_address: '1234 C Street',
+        city: 'city',
+        state: 'CA',
+        zip: '12345',
+        type: 'Home'
+      }],
+      roles: [],
+      languages: [],
+      phone_numbers: []
+    }
+  end
   let(:screening) do
     {
       id: '1',
@@ -39,7 +79,7 @@ feature 'Edit Person' do
       allegations: [],
       incident_address: {},
       safety_alerts: [],
-      participants: [marge.as_json.symbolize_keys, homer.as_json.symbolize_keys]
+      participants: [marge, homer]
     }
   end
 
@@ -48,13 +88,13 @@ feature 'Edit Person' do
       .and_return(json_body(screening.to_json, status: 200))
     stub_empty_history_for_screening(screening)
     stub_empty_relationships
-    marge.screening_id = screening[:id]
-    homer.screening_id = screening[:id]
+    marge[:screening_id] = screening[:id]
+    homer[:screening_id] = screening[:id]
   end
 
   scenario 'character limitations by field' do
     visit edit_screening_path(id: screening[:id])
-    within edit_participant_card_selector(marge.id) do
+    within edit_participant_card_selector(marge[:id]) do
       fill_in 'Zip', with: '9i5%6Y1 8-_3.6+9*7='
       expect(page).to have_field('Zip', with: '95618')
       fill_in 'Zip', with: '9i5%6Y1 8'
@@ -65,25 +105,25 @@ feature 'Edit Person' do
   context 'editing and saving basic person information' do
     scenario 'saves the person information' do
       stub_request(:put,
-        ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], marge.id)))
+        ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], marge[:id])))
         .and_return(json_body(marge.to_json, status: 200))
       visit edit_screening_path(id: screening[:id])
-      within edit_participant_card_selector(marge.id) do
+      within edit_participant_card_selector(marge[:id]) do
         within '.card-header' do
           expect(page).to have_content('Sensitive')
           expect(page).to have_content marge_formatted_name
           expect(page).to have_button 'Remove person'
         end
         within '.card-body' do
-          table_description = marge.legacy_descriptor.legacy_table_description
-          ui_id = marge.legacy_descriptor.legacy_ui_id
+          table_description = marge[:legacy_descriptor][:legacy_table_description]
+          ui_id = marge[:legacy_descriptor][:legacy_ui_id]
           expect(page).to have_react_select_field 'Role', with: %w[Victim Perpetrator]
           expect(page).to have_content("#{table_description} ID #{ui_id} in CWS-CMS")
-          expect(page).to have_field('First Name', with: marge.first_name)
-          expect(page).to have_field('Middle Name', with: marge.middle_name)
-          expect(page).to have_field('Last Name', with: marge.last_name)
-          expect(page).to have_field('Suffix', with: marge.name_suffix)
-          expect(page).to have_field('Social security number', with: marge.ssn)
+          expect(page).to have_field('First Name', with: marge[:first_name])
+          expect(page).to have_field('Middle Name', with: marge[:middle_name])
+          expect(page).to have_field('Last Name', with: marge[:last_name])
+          expect(page).to have_field('Suffix', with: marge[:name_suffix])
+          expect(page).to have_field('Social security number', with: marge[:ssn])
 
           fill_in 'First Name', with: 'new first name'
           fill_in 'Middle Name', with: 'new middle name'
@@ -96,7 +136,7 @@ feature 'Edit Person' do
 
       expect(
         a_request(:put,
-          ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], marge.id)))
+          ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], marge[:id])))
         .with(
           body: hash_including(
             first_name: 'new first name',
@@ -113,14 +153,14 @@ feature 'Edit Person' do
   context 'editing and saving person phone numbers' do
     scenario 'saves the person information' do
       stub_request(:put,
-        ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], marge.id)))
+        ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], marge[:id])))
         .and_return(json_body({}.to_json, status: 200))
 
       visit edit_screening_path(id: screening[:id])
-      within edit_participant_card_selector(marge.id) do
+      within edit_participant_card_selector(marge[:id]) do
         within '.card-body' do
           expect(page).to have_field('Phone Number', with: '(123)456-7890')
-          expect(page).to have_field('Phone Number Type', with: phone_number.type)
+          expect(page).to have_field('Phone Number Type', with: phone_number[:type])
 
           click_button 'Add new phone number'
 
@@ -134,14 +174,14 @@ feature 'Edit Person' do
 
       expect(
         a_request(:put,
-          ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], marge.id)))
+          ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], marge[:id])))
         .with(
           body: hash_including(
             'phone_numbers' => array_including(
               hash_including(
-                'id' => phone_number.id,
-                'number' => phone_number.number,
-                'type' => phone_number.type
+                'id' => phone_number[:id],
+                'number' => phone_number[:number],
+                'type' => phone_number[:type]
               ),
               hash_including(
                 'id' => nil,
@@ -158,18 +198,18 @@ feature 'Edit Person' do
   context 'editing and saving addresses' do
     scenario 'saves the person information' do
       stub_request(:put,
-        ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], homer.id)))
+        ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], homer[:id])))
         .and_return(json_body({}.to_json, status: 200))
 
-      address = homer.addresses.first
+      address = homer[:addresses].first
       visit edit_screening_path(id: screening[:id])
-      within edit_participant_card_selector(homer.id) do
+      within edit_participant_card_selector(homer[:id]) do
         within '.card-body' do
-          expect(page).to have_field('Address', with: address.street_address)
-          expect(page).to have_field('City', with: address.city)
-          expect(page).to have_field('State', with: address.state)
-          expect(page).to have_field('Zip', with: address.zip)
-          expect(find(:css, 'select#address_type').value).to eq(address.type)
+          expect(page).to have_field('Address', with: address[:street_address])
+          expect(page).to have_field('City', with: address[:city])
+          expect(page).to have_field('State', with: address[:state])
+          expect(page).to have_field('Zip', with: address[:zip])
+          expect(find(:css, 'select#address_type').value).to eq(address[:type])
 
           click_button 'Add new address'
 
@@ -186,17 +226,17 @@ feature 'Edit Person' do
 
       expect(
         a_request(:put,
-          ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], homer.id)))
+          ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], homer[:id])))
         .with(
           body: hash_including(
             'addresses' => array_including(
               hash_including(
-                'id' => address.id,
-                'street_address' => address.street_address,
-                'city' => address.city,
-                'state' => address.state,
-                'zip' => address.zip,
-                'type' => address.type
+                'id' => address[:id],
+                'street_address' => address[:street_address],
+                'city' => address[:city],
+                'state' => address[:state],
+                'zip' => address[:zip],
+                'type' => address[:type]
               ),
               hash_including(
                 'id' => nil,
@@ -216,19 +256,19 @@ feature 'Edit Person' do
   context 'editing and saving person demographics' do
     scenario 'saves the person information' do
       stub_request(:put,
-        ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], marge.id)))
+        ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], marge[:id])))
         .and_return(json_body({}.to_json, status: 200))
 
       visit edit_screening_path(id: screening[:id])
-      dob = Time.parse(marge.date_of_birth).strftime('%m/%d/%Y')
-      within edit_participant_card_selector(marge.id) do
+      dob = Time.parse(marge[:date_of_birth]).strftime('%m/%d/%Y')
+      within edit_participant_card_selector(marge[:id]) do
         within '.card-body' do
           expect(page).to have_field('Date of birth', with: dob)
           expect(page).to have_field('Approximate Age', disabled: true)
           expect(page).to have_field('Approximate Age Units', disabled: true)
-          expect(page).to have_field('Sex at Birth', with: marge.gender)
+          expect(page).to have_field('Sex at Birth', with: marge[:gender])
           expect(page).to have_react_select_field(
-            'Language(s) (Primary First)', with: marge.languages
+            'Language(s) (Primary First)', with: marge[:languages]
           )
         end
         click_button 'Save'
@@ -236,12 +276,12 @@ feature 'Edit Person' do
 
       expect(
         a_request(:put,
-          ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], marge.id)))
+          ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], marge[:id])))
         .with(
           body: hash_including(
-            date_of_birth: marge.date_of_birth,
-            gender: marge.gender,
-            languages: marge.languages
+            date_of_birth: marge[:date_of_birth],
+            gender: marge[:gender],
+            languages: marge[:languages]
           )
         )
       ).to have_been_made
@@ -250,30 +290,30 @@ feature 'Edit Person' do
 
   scenario 'editing & saving a person for a screening saves only the relevant person ids' do
     stub_request(:put,
-      ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], marge.id)))
+      ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], marge[:id])))
       .and_return(json_body({}.to_json, status: 200))
 
     visit edit_screening_path(id: screening[:id])
 
-    within edit_participant_card_selector(marge.id) do
+    within edit_participant_card_selector(marge[:id]) do
       click_button 'Save'
     end
 
     expect(
       a_request(:put,
-        ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], marge.id)))
+        ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], marge[:id])))
       .with(
         body: hash_including(
           screening_id: screening[:id],
           sensitive: true,
           sealed: false,
           legacy_descriptor: hash_including(
-            'id' => marge.legacy_descriptor.id,
-            'legacy_id' => marge.legacy_descriptor.legacy_id,
-            'legacy_last_updated' => marge.legacy_descriptor.legacy_last_updated.iso8601(3),
-            'legacy_table_description' => marge.legacy_descriptor.legacy_table_description,
-            'legacy_table_name' => marge.legacy_descriptor.legacy_table_name,
-            'legacy_ui_id' => marge.legacy_descriptor.legacy_ui_id
+            'id' => marge[:legacy_descriptor][:id],
+            'legacy_id' => marge[:legacy_descriptor][:legacy_id],
+            'legacy_last_updated' => marge[:legacy_descriptor][:legacy_last_updated],
+            'legacy_table_description' => marge[:legacy_descriptor][:legacy_table_description],
+            'legacy_table_name' => marge[:legacy_descriptor][:legacy_table_name],
+            'legacy_ui_id' => marge[:legacy_descriptor][:legacy_ui_id]
           )
         )
       )
@@ -282,7 +322,7 @@ feature 'Edit Person' do
 
   scenario 'editing and saving a participant for a screening saves only the relevant participant' do
     visit edit_screening_path(id: screening[:id])
-    within edit_participant_card_selector(marge.id) do
+    within edit_participant_card_selector(marge[:id]) do
       within '.card-header' do
         expect(page).to have_content('Sensitive')
         expect(page).to have_content marge_formatted_name
@@ -290,33 +330,33 @@ feature 'Edit Person' do
       end
 
       within '.card-body' do
-        table_description = marge.legacy_descriptor.legacy_table_description
-        ui_id = marge.legacy_descriptor.legacy_ui_id
+        table_description = marge[:legacy_descriptor][:legacy_table_description]
+        ui_id = marge[:legacy_descriptor][:legacy_ui_id]
         expect(page).to have_content("#{table_description} ID #{ui_id} in CWS-CMS")
         expect(page).to have_field('Phone Number', with: '(123)456-7890')
         expect(page).to have_field('Phone Number Type', with: 'Work')
-        expect(page).to have_field('Sex at Birth', with: marge.gender)
+        expect(page).to have_field('Sex at Birth', with: marge[:gender])
         expect(page).to have_react_select_field(
-          'Language(s) (Primary First)', with: marge.languages
+          'Language(s) (Primary First)', with: marge[:languages]
         )
         # Date of birth should not have datepicker, but limiting by field ID will break when
         # DOB fields are correctly namespaced by participant ID. Feel free to make this more
         # specific once that's done.
         expect(page).not_to have_selector('.rw-select')
-        dob = Time.parse(marge.date_of_birth).strftime('%m/%d/%Y')
+        dob = Time.parse(marge[:date_of_birth]).strftime('%m/%d/%Y')
         expect(page).to have_field('Date of birth', with: dob)
-        expect(page).to have_field('Address', with: marge.addresses.first.street_address)
-        expect(page).to have_field('City', with: marge.addresses.first.city)
-        expect(page).to have_field('State', with: marge.addresses.first.state)
-        expect(page).to have_field('Zip', with: marge.addresses.first.zip)
-        expect(find(:css, 'select#address_type').value).to eq(marge.addresses.first.type)
+        expect(page).to have_field('Address', with: marge[:addresses].first[:street_address])
+        expect(page).to have_field('City', with: marge[:addresses].first[:city])
+        expect(page).to have_field('State', with: marge[:addresses].first[:state])
+        expect(page).to have_field('Zip', with: marge[:addresses].first[:zip])
+        expect(find(:css, 'select#address_type').value).to eq(marge[:addresses].first[:type])
         within '#ethnicity' do
           expect(page.find('input[value="Yes"]')).to be_checked
-          expect(page).to have_field("participant-#{marge.id}-ethnicity-detail", text: 'Mexican')
+          expect(page).to have_field("participant-#{marge[:id]}-ethnicity-detail", text: 'Mexican')
         end
         within '#race' do
           expect(page.find('input[value="Asian"]')).to be_checked
-          expect(page).to have_field("participant-#{marge.id}-Asian-race-detail", text: 'Hmong')
+          expect(page).to have_field("participant-#{marge[:id]}-Asian-race-detail", text: 'Hmong')
         end
         expect(page).to have_button 'Cancel'
         expect(page).to have_button 'Save'
@@ -324,31 +364,31 @@ feature 'Edit Person' do
         fill_in 'City', with: 'New City'
       end
 
-      marge.ssn = new_ssn
-      marge.addresses.first.city = 'New City'
+      marge[:ssn] = new_ssn
+      marge[:addresses].first[:city] = 'New City'
 
       stub_request(:put,
-        ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], marge.id)))
+        ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], marge[:id])))
         .and_return(json_body(marge.to_json, status: 200))
     end
 
-    within edit_participant_card_selector(homer.id) do
+    within edit_participant_card_selector(homer[:id]) do
       within '.card-body' do
         fill_in 'First Name', with: 'My new first name'
       end
     end
 
-    within edit_participant_card_selector(marge.id) do
+    within edit_participant_card_selector(marge[:id]) do
       within '.card-body' do
         click_button 'Save'
       end
       expect(
         a_request(:put,
-          ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], marge.id)))
+          ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], marge[:id])))
       ).to have_been_made
     end
 
-    within show_participant_card_selector(marge.id) do
+    within show_participant_card_selector(marge[:id]) do
       within '.card-body' do
         expect(page).to have_content(new_ssn)
         expect(page).to_not have_content(old_ssn)
@@ -357,7 +397,7 @@ feature 'Edit Person' do
       end
     end
 
-    within edit_participant_card_selector(homer.id) do
+    within edit_participant_card_selector(homer[:id]) do
       within '.card-body' do
         expect(page).to have_field('First Name', with: 'My new first name')
       end
@@ -367,7 +407,7 @@ feature 'Edit Person' do
   context 'editing social security number (ssn)' do
     scenario 'numbers are formatted correctly' do
       visit edit_screening_path(id: screening[:id])
-      within edit_participant_card_selector(homer.id) do
+      within edit_participant_card_selector(homer[:id]) do
         within '.card-body' do
           fill_in 'Social security number', with: ''
           expect(page).to have_field('Social security number', with: '')
@@ -381,7 +421,7 @@ feature 'Edit Person' do
 
     scenario 'an invalid character is inserted' do
       visit edit_screening_path(id: screening[:id])
-      within edit_participant_card_selector(homer.id) do
+      within edit_participant_card_selector(homer[:id]) do
         within '.card-body' do
           fill_in 'Social security number', with: '12k34?!#adf567890'
           expect(page).to have_field('Social security number', with: '123-45-6789')
@@ -393,14 +433,14 @@ feature 'Edit Person' do
   scenario 'removing an address from a participant' do
     visit edit_screening_path(id: screening[:id])
 
-    within edit_participant_card_selector(marge.id) do
+    within edit_participant_card_selector(marge[:id]) do
       within '.card-body' do
         within page.all('.list-item').last do
-          expect(page).to have_field('Address', with: marge.addresses.first.street_address)
-          expect(page).to have_field('City', with: marge.addresses.first.city)
-          expect(page).to have_field('State', with: marge.addresses.first.state)
-          expect(page).to have_field('Zip', with: marge.addresses.first.zip)
-          expect(find(:css, 'select#address_type').value).to eq(marge.addresses.first.type)
+          expect(page).to have_field('Address', with: marge[:addresses].first[:street_address])
+          expect(page).to have_field('City', with: marge[:addresses].first[:city])
+          expect(page).to have_field('State', with: marge[:addresses].first[:state])
+          expect(page).to have_field('Zip', with: marge[:addresses].first[:zip])
+          expect(find(:css, 'select#address_type').value).to eq(marge[:addresses].first[:type])
           click_link 'Delete address'
         end
 
@@ -408,18 +448,18 @@ feature 'Edit Person' do
       end
     end
 
-    marge.addresses = []
+    marge[:addresses] = []
     stub_request(:put,
-      ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], marge.id)))
+      ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], marge[:id])))
       .and_return(json_body(marge.to_json, status: 200))
 
-    within edit_participant_card_selector(marge.id) do
+    within edit_participant_card_selector(marge[:id]) do
       click_button 'Save'
     end
 
     expect(
       a_request(:put,
-        ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], marge.id)))
+        ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], marge[:id])))
       .with(body: hash_including(addresses: []))
     ).to have_been_made
   end
@@ -427,22 +467,22 @@ feature 'Edit Person' do
   scenario 'when a user modifies languages for an existing participant' do
     visit edit_screening_path(id: screening[:id])
 
-    within edit_participant_card_selector(marge.id) do
+    within edit_participant_card_selector(marge[:id]) do
       within('.col-md-12', text: 'Language(s)') do
         fill_in_react_select 'Language(s)', with: 'English'
         fill_in_react_select 'Language(s)', with: 'Farsi'
-        remove_react_select_option('Language(s)', marge.languages.first)
+        remove_react_select_option('Language(s)', marge[:languages].first)
         fill_in_react_select 'Language(s)', with: 'Arabic'
         fill_in_react_select 'Language(s)', with: 'Spanish'
       end
-      marge.languages = %w[English Arabic]
+      marge[:languages] = %w[English Arabic]
       stub_request(:put,
-        ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], marge.id)))
+        ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], marge[:id])))
         .and_return(json_body(marge.to_json, status: 200))
 
       click_button 'Save'
       expect(a_request(:put,
-        ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], marge.id)))
+        ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], marge[:id])))
         .with(body: hash_including(
           languages: contain_exactly('English', 'Arabic')
         ))).to have_been_made
@@ -452,7 +492,7 @@ feature 'Edit Person' do
   scenario 'when a user tabs out of the language multi-select' do
     visit edit_screening_path(id: screening[:id])
 
-    within edit_participant_card_selector(marge.id) do
+    within edit_participant_card_selector(marge[:id]) do
       within('.col-md-12', text: 'Language(s)') do
         fill_in_react_select 'Language(s)', with: 'English', exit_key: :tab
         expect(page).to have_react_select_field 'Language(s)', with: ['Russian']
@@ -462,7 +502,7 @@ feature 'Edit Person' do
 
   scenario 'canceling edits for a screening participant' do
     visit edit_screening_path(id: screening[:id])
-    within edit_participant_card_selector(marge.id) do
+    within edit_participant_card_selector(marge[:id]) do
       within '.card-body' do
         expect(page).to have_field('Social security number', with: old_ssn)
         fill_in 'Social security number', with: new_ssn
@@ -473,10 +513,10 @@ feature 'Edit Person' do
 
     expect(
       a_request(:put,
-        ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], marge.id)))
+        ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], marge[:id])))
     ).to_not have_been_made
 
-    within show_participant_card_selector(marge.id) do
+    within show_participant_card_selector(marge[:id]) do
       within '.card-body' do
         expect(page).to have_content(old_ssn)
         expect(page).to_not have_content(new_ssn)
@@ -487,7 +527,7 @@ feature 'Edit Person' do
   scenario 'when a user clicks cancel on edit page' do
     visit edit_screening_path(id: screening[:id])
 
-    within edit_participant_card_selector(marge.id) do
+    within edit_participant_card_selector(marge[:id]) do
       fill_in 'Social security number', with: new_ssn
       click_button 'Cancel'
     end
@@ -500,13 +540,13 @@ feature 'Edit Person' do
   scenario 'when a user edits a participants role in a screening' do
     visit edit_screening_path(id: screening[:id])
 
-    within edit_participant_card_selector(marge.id) do
+    within edit_participant_card_selector(marge[:id]) do
       expect(page).to have_react_select_field('Role', with: %w[Victim Perpetrator])
       remove_react_select_option('Role', 'Perpetrator')
       expect(page).to have_no_content('Perpetrator')
 
       stub_request(:put,
-        ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], marge.id)))
+        ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], marge[:id])))
         .and_return(json_body(marge.to_json, status: 200))
 
       within '.card-body' do
@@ -516,17 +556,17 @@ feature 'Edit Person' do
 
     expect(
       a_request(:put,
-        ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], marge.id)))
+        ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], marge[:id])))
       .with(body: hash_including('roles' => ['Victim']))
     ).to have_been_made
 
-    expect(page).to have_selector(show_participant_card_selector(marge.id))
+    expect(page).to have_selector(show_participant_card_selector(marge[:id]))
   end
 
   scenario 'when a user tabs out of the role multi-select' do
     visit edit_screening_path(id: screening[:id])
 
-    within edit_participant_card_selector(marge.id) do
+    within edit_participant_card_selector(marge[:id]) do
       fill_in_react_select 'Role', with: 'Mandated Reporter', exit_key: :tab
       expect(page).to have_react_select_field 'Role', with: %w[Victim Perpetrator]
     end
@@ -538,7 +578,7 @@ feature 'Edit Person' do
     scenario 'the other reporter roles are unavailable' do
       visit edit_screening_path(id: screening[:id])
 
-      within edit_participant_card_selector(marge.id) do
+      within edit_participant_card_selector(marge[:id]) do
         fill_in_react_select('Role', with: 'Non-mandated Reporter')
         expect(page).to have_react_select_field('Role', with: ['Mandated Reporter'])
 
@@ -552,12 +592,12 @@ feature 'Edit Person' do
   scenario 'when a user modifies existing person ethnicity from Yes to nothing selected' do
     visit edit_screening_path(id: screening[:id])
 
-    marge.ethnicity = { hispanic_latino_origin: nil, ethnicity_detail: [] }
+    marge[:ethnicity] = { hispanic_latino_origin: nil, ethnicity_detail: [] }
     stub_request(:put,
-      ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], marge.id)))
+      ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], marge[:id])))
       .and_return(json_body(marge.to_json, status: 200))
 
-    within edit_participant_card_selector(marge.id) do
+    within edit_participant_card_selector(marge[:id]) do
       within 'fieldset', text: 'Hispanic/Latino Origin' do
         find('label', text: 'Yes').click
       end
@@ -567,7 +607,7 @@ feature 'Edit Person' do
 
     expect(
       a_request(:put,
-        ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], marge.id)))
+        ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], marge[:id])))
       .with(body: hash_including(
         'ethnicity' => hash_including(
           'ethnicity_detail' => [],
@@ -576,18 +616,18 @@ feature 'Edit Person' do
       ))
     ).to have_been_made
 
-    within show_participant_card_selector(marge.id) do
+    within show_participant_card_selector(marge[:id]) do
       expect(page).to_not have_content('Mexican - Yes')
     end
   end
 
   scenario 'setting an approximate age' do
     stub_request(:put,
-      ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], marge.id)))
+      ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], marge[:id])))
       .and_return(json_body(marge.to_json, status: 201))
 
     visit edit_screening_path(id: screening[:id])
-    within edit_participant_card_selector(marge.id) do
+    within edit_participant_card_selector(marge[:id]) do
       expect(page).to have_field('Approximate Age', disabled: true)
       expect(page).to have_field('approximate_age_units', disabled: true)
 
@@ -600,7 +640,7 @@ feature 'Edit Person' do
       expect(page).to have_field('Approximate Age', with: '123')
       expect(page).to have_select('approximate_age_units', selected: 'Days')
 
-      dob = Time.parse(marge.date_of_birth).strftime('%m/%d/%Y')
+      dob = Time.parse(marge[:date_of_birth]).strftime('%m/%d/%Y')
       fill_in_datepicker 'Date of birth', with: dob
       expect(page).to have_field('Approximate Age', disabled: true, with: '')
       expect(page).to have_select('approximate_age_units', disabled: true, selected: '')
@@ -611,9 +651,9 @@ feature 'Edit Person' do
       fill_in_datepicker 'Date of birth', with: dob, blur: false
       click_button 'Save'
       expect(a_request(:put,
-        ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], marge.id)))
+        ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], marge[:id])))
         .with(body: hash_including(
-          date_of_birth: marge.date_of_birth,
+          date_of_birth: marge[:date_of_birth],
           approximate_age: nil,
           approximate_age_units: nil
         ))).to have_been_made
@@ -629,14 +669,14 @@ feature 'Edit Person' do
         allegations: [],
         incident_address: {},
         safety_alerts: [],
-        participants: [homer.as_json.symbolize_keys]
+        participants: [homer]
       }
     end
 
     scenario 'updates the participant' do
       visit edit_screening_path(id: screening[:id])
 
-      updated_participant = homer.as_json.merge(
+      updated_participant = homer.merge(
         safelySurrenderedBabies: {
           surrendered_by: 'Unknown',
           relation_to_child: '1597',
@@ -645,15 +685,15 @@ feature 'Edit Person' do
           parent_guardian_provided_med_questionaire: 'D',
           med_questionaire_return_date: '2011-01-01',
           comments: 'These are the comments.',
-          participant_child: homer.id
+          participant_child: homer[:id]
         }
       )
 
       stub_request(:put,
-        ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], homer.id)))
+        ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], homer[:id])))
         .and_return(json_body(updated_participant.to_json, status: 200))
 
-      within edit_participant_card_selector(homer.id) do
+      within edit_participant_card_selector(homer[:id]) do
         expect(page).to have_no_content('Safely Surrendered Baby')
 
         fill_in_react_select('Role', with: 'Victim')
@@ -672,12 +712,12 @@ feature 'Edit Person' do
       end
 
       expect(a_request(:put,
-        ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], homer.id)))
+        ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], homer[:id])))
         .with(body: hash_including(
           safelySurrenderedBabies: anything
         ))).to have_been_made
 
-      within show_participant_card_selector(homer.id) do
+      within show_participant_card_selector(homer[:id]) do
         expect(page).to have_content('Safely Surrendered Baby')
         expect(page).to have_content('Relationship to Surrendered Child Grandmother')
         expect(page).to have_content('Bracelet ID 12345')
@@ -696,7 +736,7 @@ feature 'Edit Person' do
 
       visit edit_screening_path(id: screening[:id])
 
-      within edit_participant_card_selector(homer.id) do
+      within edit_participant_card_selector(homer[:id]) do
         expect(page).to have_content('Safely Surrendered Baby')
         expect(page).to have_select('relation-to-child', selected: 'Grandmother')
       end

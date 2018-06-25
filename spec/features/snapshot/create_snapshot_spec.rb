@@ -34,14 +34,20 @@ feature 'Create Snapshot' do
         visit root_path(accessCode: access_code)
         click_button 'Start Snapshot'
 
-        person = FactoryBot.create(:participant, first_name: 'Marge')
+        person = {
+          id: '1',
+          first_name: 'Marge',
+          legacy_descriptor: {
+            legacy_id: '1'
+          }
+        }
         search_response = PersonSearchResponseBuilder.build do |response|
           response.with_total(1)
           response.with_hits do
             [
               PersonSearchResultBuilder.build do |builder|
                 builder.with_first_name('Marge')
-                builder.with_legacy_descriptor(person.legacy_descriptor)
+                builder.with_legacy_descriptor(person[:legacy_descriptor])
               end
             ]
           end
@@ -49,25 +55,25 @@ feature 'Create Snapshot' do
         stub_person_search(search_term: 'Ma', person_response: search_response)
         stub_request(
           :get,
-          ferb_api_url(FerbRoutes.client_authorization_path(person.legacy_descriptor.legacy_id))
+          ferb_api_url(FerbRoutes.client_authorization_path(person[:legacy_descriptor][:legacy_id]))
         ).and_return(json_body('', status: 200))
-        stub_person_find(id: person.legacy_descriptor.legacy_id, person_response: search_response)
+        stub_person_find(id: person[:legacy_descriptor][:legacy_id], person_response: search_response)
         stub_request(
           :get,
           ferb_api_url(
             FerbRoutes.relationships_path
-          ) + "?clientIds=#{person.legacy_descriptor.legacy_id}"
+          ) + "?clientIds=#{person[:legacy_descriptor][:legacy_id]}"
         ).and_return(json_body([].to_json, status: 200))
-        stub_empty_history_for_clients [person.legacy_descriptor.legacy_id]
+        stub_empty_history_for_clients [person[:legacy_descriptor][:legacy_id]]
 
         within '#search-card', text: 'Search' do
           fill_in 'Search for clients', with: 'Ma'
           page.find('strong', text: 'Marge').click
         end
 
-        within show_participant_card_selector(person.legacy_descriptor.legacy_id) do
+        within show_participant_card_selector(person[:legacy_descriptor][:legacy_id]) do
           within '.card-body' do
-            expect(page).to have_content(person.first_name)
+            expect(page).to have_content(person[:first_name])
           end
         end
 
@@ -76,7 +82,7 @@ feature 'Create Snapshot' do
         click_button 'Start Snapshot'
 
         expect(page).not_to have_css(
-          show_participant_card_selector(person.legacy_descriptor.legacy_id)
+          show_participant_card_selector(person[:legacy_descriptor][:legacy_id])
         )
       end
 
@@ -131,26 +137,30 @@ feature 'Create Snapshot' do
         ).and_return(json_body(new_screening.to_json, status: 200))
         click_button 'Start Screening'
 
-        person = FactoryBot.create(
-          :participant,
+        person = {
+          id: '1',
+          screening_id: new_screening[:id],
           first_name: 'Marge',
-          screening_id: new_screening[:id]
-        )
+          legacy_descriptor: {
+            legacy_id: '1'
+          }
+        }
         search_response = PersonSearchResponseBuilder.build do |response|
           response.with_total(1)
           response.with_hits do
             [
               PersonSearchResultBuilder.build do |builder|
                 builder.with_first_name('Marge')
-                builder.with_legacy_descriptor(person.legacy_descriptor)
+                builder.with_legacy_descriptor(person[:legacy_descriptor])
               end
             ]
           end
         end
+        binding.pry
         stub_person_search(search_term: 'Ma', person_response: search_response)
         stub_request(
           :get,
-          ferb_api_url(FerbRoutes.client_authorization_path(person.legacy_descriptor.legacy_id))
+          ferb_api_url(FerbRoutes.client_authorization_path(person[:legacy_descriptor][:legacy_id]))
         ).and_return(json_body('', status: 200))
         stub_request(
           :post,
@@ -162,9 +172,9 @@ feature 'Create Snapshot' do
           page.find('strong', text: 'Marge').click
         end
 
-        within edit_participant_card_selector(person.id) do
+        within edit_participant_card_selector(person[:id]) do
           within '.card-header' do
-            expect(page).to have_content(person.first_name)
+            expect(page).to have_content(person[:first_name])
           end
         end
 
@@ -178,7 +188,7 @@ feature 'Create Snapshot' do
           )
         end
         expect(page).not_to have_css(
-          show_participant_card_selector(person.legacy_descriptor.legacy_id)
+          show_participant_card_selector(person[:legacy_descriptor][:legacy_id])
         )
       end
     end

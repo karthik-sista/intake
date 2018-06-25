@@ -3,7 +3,20 @@
 require 'rails_helper'
 
 feature 'Participant Address' do
-  let(:marge) { FactoryBot.create(:participant, :with_legacy_address) }
+  let(:marge) do
+    {
+      id: '1',
+      first_name: 'Marge',
+      last_name: 'Simpson',
+      legacy_descriptor: {
+        legacy_id: '1',
+        legacy_source_table: 'ADDR_T'
+      },
+      addresses: [],
+      phone_numbers: [],
+      roles: []
+    }
+  end
   let(:screening) do
     {
       id: '1',
@@ -11,7 +24,7 @@ feature 'Participant Address' do
       cross_reports: [],
       allegations: [],
       safety_alerts: [],
-      participants: [marge.as_json.symbolize_keys]
+      participants: [marge]
     }
   end
   before do
@@ -23,7 +36,7 @@ feature 'Participant Address' do
 
   scenario 'has read only addresses ' do
     visit edit_screening_path(id: screening[:id])
-    expect(page).to_not have_field('Address', with: marge.addresses.first.street_address)
+    expect(page).to_not have_field('Address', with: '1234 Some Lane')
 
     marge[:addresses].push(
       street_address: '1234 Some Lane',
@@ -33,10 +46,10 @@ feature 'Participant Address' do
       type: 'Home'
     )
     stub_request(
-      :put, ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], marge.id))
+      :put, ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], marge[:id]))
     ).and_return(json_body(marge.to_json, status: 200))
 
-    within edit_participant_card_selector(marge.id) do
+    within edit_participant_card_selector(marge[:id]) do
       click_button 'Add new address'
 
       expect(page).to have_select('Address Type', options: [
@@ -64,7 +77,7 @@ feature 'Participant Address' do
     end
 
     expect(a_request(:put,
-      ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], marge.id)))
+      ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], marge[:id])))
                .with(body: hash_including(
                  'addresses' => array_including(
                    hash_including(
@@ -79,9 +92,9 @@ feature 'Participant Address' do
                  )
                ))).to have_been_made
 
-    within show_participant_card_selector(marge.id) do
+    within show_participant_card_selector(marge[:id]) do
       click_link 'Edit'
-      expect(page).to_not have_field('Address', with: marge.addresses.first.street_address)
+      expect(page).to_not have_field('Address', with: marge[:addresses].first[:street_address])
       expect(page).to have_field('Address', with: '1234 Some Lane')
     end
   end

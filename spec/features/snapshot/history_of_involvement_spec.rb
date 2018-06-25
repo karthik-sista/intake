@@ -4,7 +4,14 @@ require 'rails_helper'
 require 'feature/testing'
 
 feature 'Snapshot History of Involvement' do
-  let(:person) { FactoryBot.create(:participant, first_name: 'Marge') }
+  let(:person) do
+    {
+      id: '1',
+      legacy_descriptor: {
+        legacy_id: '1'
+      }
+    }
+  end
 
   let(:screenings) do
     [
@@ -179,7 +186,7 @@ feature 'Snapshot History of Involvement' do
         :get,
         ferb_api_url(
           FerbRoutes.relationships_path
-        ) + "?clientIds=#{person.legacy_descriptor.legacy_id}"
+        ) + "?clientIds=#{person[:legacy_descriptor][:legacy_id]}"
       ).and_return(json_body([].to_json, status: 200))
 
       search_response = PersonSearchResponseBuilder.build do |response|
@@ -188,7 +195,7 @@ feature 'Snapshot History of Involvement' do
           [
             PersonSearchResultBuilder.build do |builder|
               builder.with_first_name('Marge')
-              builder.with_legacy_descriptor(person.legacy_descriptor)
+              builder.with_legacy_descriptor(person[:legacy_descriptor])
             end
           ]
         end
@@ -197,15 +204,15 @@ feature 'Snapshot History of Involvement' do
         :get,
         ferb_api_url(
           FerbRoutes.history_of_involvements_path
-        ) + "?clientIds=#{person.legacy_descriptor.legacy_id}"
+        ) + "?clientIds=#{person[:legacy_descriptor][:legacy_id]}"
       ).and_return(json_body(history.to_json, status: 200))
 
       stub_person_search(search_term: 'Ma', person_response: search_response)
       stub_request(
         :get,
-        ferb_api_url(FerbRoutes.client_authorization_path(person.legacy_descriptor.legacy_id))
+        ferb_api_url(FerbRoutes.client_authorization_path(person[:legacy_descriptor][:legacy_id]))
       ).and_return(json_body('', status: 200))
-      stub_person_find(id: person.legacy_descriptor.legacy_id, person_response: search_response)
+      stub_person_find(id: person[:legacy_descriptor][:legacy_id], person_response: search_response)
 
       within '#search-card', text: 'Search' do
         fill_in 'Search for clients', with: 'Ma'
@@ -255,7 +262,7 @@ feature 'Snapshot History of Involvement' do
           :get,
           ferb_api_url(
             FerbRoutes.history_of_involvements_path
-          ) + "?clientIds=#{person.legacy_descriptor.legacy_id}"
+          ) + "?clientIds=#{person[:legacy_descriptor][:legacy_id]}"
         )
       ).to have_been_made
 
@@ -371,7 +378,7 @@ feature 'Snapshot History of Involvement' do
         :get,
         ferb_api_url(
           FerbRoutes.relationships_path
-        ) + "?clientIds=#{person.legacy_descriptor.legacy_id}"
+        ) + "?clientIds=#{person[:legacy_descriptor][:legacy_id]}"
       ).and_return(json_body([].to_json, status: 200))
 
       search_response = PersonSearchResponseBuilder.build do |response|
@@ -380,7 +387,7 @@ feature 'Snapshot History of Involvement' do
           [
             PersonSearchResultBuilder.build do |builder|
               builder.with_first_name('Marge')
-              builder.with_legacy_descriptor(person.legacy_descriptor)
+              builder.with_legacy_descriptor(person[:legacy_descriptor])
             end
           ]
         end
@@ -389,15 +396,15 @@ feature 'Snapshot History of Involvement' do
         :get,
         ferb_api_url(
           FerbRoutes.history_of_involvements_path
-        ) + "?clientIds=#{person.legacy_descriptor.legacy_id}"
+        ) + "?clientIds=#{person[:legacy_descriptor][:legacy_id]}"
       ).and_return(json_body(history.to_json, status: 200))
 
       stub_person_search(search_term: 'Ma', person_response: search_response)
       stub_request(
         :get,
-        ferb_api_url(FerbRoutes.client_authorization_path(person.legacy_descriptor.legacy_id))
+        ferb_api_url(FerbRoutes.client_authorization_path(person[:legacy_descriptor][:legacy_id]))
       ).and_return(json_body('', status: 200))
-      stub_person_find(id: person.legacy_descriptor.legacy_id, person_response: search_response)
+      stub_person_find(id: person[:legacy_descriptor][:legacy_id], person_response: search_response)
 
       within '#search-card', text: 'Search' do
         fill_in 'Search for clients', with: 'Ma'
@@ -414,7 +421,7 @@ feature 'Snapshot History of Involvement' do
           :get,
           ferb_api_url(
             FerbRoutes.history_of_involvements_path
-          ) + "?clientIds=#{person.legacy_descriptor.legacy_id}"
+          ) + "?clientIds=#{person[:legacy_descriptor][:legacy_id]}"
         )
       ).to have_been_made
 

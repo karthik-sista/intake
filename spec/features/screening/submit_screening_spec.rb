@@ -35,14 +35,22 @@ feature 'Submit Screening' do
   end
 
   context 'screening has people' do
-    let(:participant) { FactoryBot.create(:participant) }
+    let(:participant) do
+      {
+        id: '1',
+        addresses: [],
+        phone_numbers: [],
+        languages: [],
+        roles: []
+      }
+    end
     let(:existing_screening) do
       screening.merge(participants: [participant.as_json.symbolize_keys])
     end
 
     before do
       stub_request(
-        :put, ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], participant.id))
+        :put, ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], participant[:id]))
       ).and_return(json_body(participant.to_json, status: 200))
     end
 
@@ -50,10 +58,10 @@ feature 'Submit Screening' do
       visit edit_screening_path(existing_screening[:id])
       expect(page).to have_button('Submit', disabled: true)
       within('.card', text: 'Screening Information') { click_button 'Save' }
-      within edit_participant_card_selector(participant.id) do
+      within edit_participant_card_selector(participant[:id]) do
         click_button 'Save'
       end
-      expect(page).to have_css show_participant_card_selector(participant.id)
+      expect(page).to have_css show_participant_card_selector(participant[:id])
       within('.card', text: 'Narrative') { click_button 'Save' }
       within('.card', text: 'Incident Information') { click_button 'Save' }
       within('.card', text: 'Allegations') { click_button 'Save' }
@@ -74,10 +82,10 @@ feature 'Submit Screening' do
       within('.card', text: 'Cross Report') { click_button 'Save' }
       within('.card', text: 'Decision') { click_button 'Save' }
       expect(page).to have_button('Submit', disabled: true)
-      within edit_participant_card_selector(participant.id) do
+      within edit_participant_card_selector(participant[:id]) do
         click_button 'Save'
       end
-      expect(page).to have_css show_participant_card_selector(participant.id)
+      expect(page).to have_css show_participant_card_selector(participant[:id])
       expect(page).to have_button('Submit', disabled: false)
     end
 
@@ -85,10 +93,10 @@ feature 'Submit Screening' do
       visit edit_screening_path(existing_screening[:id])
       expect(page).to have_button('Submit', disabled: true)
       within('.card', text: 'Screening Information') { click_button 'Save' }
-      within edit_participant_card_selector(participant.id) do
+      within edit_participant_card_selector(participant[:id]) do
         click_button 'Save'
       end
-      expect(page).to have_css show_participant_card_selector(participant.id)
+      expect(page).to have_css show_participant_card_selector(participant[:id])
       within('.card', text: 'Narrative') { click_button 'Save' }
       within('.card', text: 'Incident Information') { click_button 'Save' }
       within('.card', text: 'Allegations') { click_button 'Save' }
@@ -147,8 +155,19 @@ feature 'Submit Screening' do
   end
 
   context 'a person on the screening does not have all of the information to be valid' do
-    let(:person) { FactoryBot.create(:participant, ssn: '666-12-3456') }
-    let(:person_name) { "#{person.first_name} #{person.last_name}" }
+    let(:person) do
+      {
+        id: '1',
+        ssn: '666-12-3456',
+        first_name: 'First',
+        last_name: 'Last',
+        phone_numbers: [],
+        languages: [],
+        addresses: [],
+        roles: []
+      }
+    end
+    let(:person_name) { "#{person[:first_name]} #{person[:last_name]}" }
     let(:existing_screening) do
       screening.merge(
         started_at: Time.now,
@@ -163,7 +182,7 @@ feature 'Submit Screening' do
     scenario 'the submit button is disabled until the person is valid' do
       stub_request(
         :put,
-        ferb_api_url(FerbRoutes.screening_participant_path(existing_screening[:id], person.id))
+        ferb_api_url(FerbRoutes.screening_participant_path(existing_screening[:id], person[:id]))
       ).and_return(json_body(person.to_json, status: 200))
 
       visit edit_screening_path(existing_screening[:id])
@@ -172,10 +191,10 @@ feature 'Submit Screening' do
       expect(page).to have_button('Submit', disabled: true)
       within('.card', text: person_name) { click_link 'Edit' }
 
-      person.ssn = '123-45-6789'
+      person[:ssn] = '123-45-6789'
       stub_request(
         :put,
-        ferb_api_url(FerbRoutes.screening_participant_path(existing_screening[:id], person.id))
+        ferb_api_url(FerbRoutes.screening_participant_path(existing_screening[:id], person[:id]))
       ).and_return(json_body(person.to_json))
 
       within('.card', text: person_name) do

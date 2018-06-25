@@ -228,10 +228,16 @@ feature 'Show Screening' do
     before do
       stub_county_agencies('c41')
       existing_screening[:participants] = Array.new(3) do
-        FactoryBot.create(
-          :participant,
-          screening_id: existing_screening[:id]
-        ).as_json.symbolize_keys
+        {
+          id: '1',
+          screening_id: existing_screening[:id],
+          first_name: 'Marge',
+          last_name: 'Simpson',
+          roles: [],
+          addresses: [],
+          languages: [],
+          phone_numbers: []
+        }
       end
     end
 

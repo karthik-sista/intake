@@ -3,20 +3,27 @@
 require 'rails_helper'
 
 feature 'Show Screening' do
-  address = FactoryBot.create(
-    :address,
+  address = {
+    id: '1',
     street_address: '123 Fake St',
     city: 'Springfield',
     state: 'NY',
     zip: '12345',
     type: 'Home'
-  )
-  phone_number = FactoryBot.create(:phone_number, number: '4567891234', type: 'Home')
+  }
+  phone_number = { id: '1', number: '4567891234', type: 'Home' }
 
   date_of_birth = rand(100..1000).weeks.ago
 
-  existing_participant = FactoryBot.create(
-    :participant,
+  existing_participant = {
+    id: '1',
+    legacy_descriptor: {
+      legacy_id: '1',
+      legacy_table_description: 'CLIENT_T',
+      legacy_ui_id: '2'
+    },
+    first_name: 'first',
+    last_name: 'last',
     date_of_birth: date_of_birth.to_s(:db),
     gender: 'male',
     middle_name: 'Jay',
@@ -36,14 +43,15 @@ feature 'Show Screening' do
       ethnicity_detail: ['Mexican']
     },
     languages: %w[Korean Lao Hawaiian]
-  )
+  }
+
   existing_screening = {
     id: '1',
     incident_address: {},
     cross_reports: [],
     allegations: [],
     safety_alerts: [],
-    participants: [existing_participant.as_json.symbolize_keys]
+    participants: [existing_participant]
   }
 
   before do
@@ -57,22 +65,22 @@ feature 'Show Screening' do
   scenario 'showing existing participant' do
     visit screening_path(id: existing_screening[:id])
 
-    within show_participant_card_selector(existing_participant.id) do
+    within show_participant_card_selector(existing_participant[:id]) do
       within '.card-header' do
         expect(page).to have_content('Sensitive')
         expect(page).to have_content(
-          "#{existing_participant.first_name} Jay #{existing_participant.last_name}, Esq"
+          "#{existing_participant[:first_name]} Jay #{existing_participant[:last_name]}, Esq"
         )
         expect(page).to have_link 'Edit person'
         expect(page).to have_button 'Remove person'
       end
 
       within '.card-body' do
-        table_description = existing_participant.legacy_descriptor.legacy_table_description
-        ui_id = existing_participant.legacy_descriptor.legacy_ui_id
+        table_description = existing_participant[:legacy_descriptor][:legacy_table_description]
+        ui_id = existing_participant[:legacy_descriptor][:legacy_ui_id]
         expect(page).to have_content("#{table_description} ID #{ui_id} in CWS-CMS")
         expect(page).to have_content(
-          "#{existing_participant.first_name} Jay #{existing_participant.last_name}, Esq"
+          "#{existing_participant[:first_name]} Jay #{existing_participant[:last_name]}, Esq"
         )
         expect(page).to have_content('(456) 789-1234')
         expect(page).to have_content('Home')
@@ -83,11 +91,11 @@ feature 'Show Screening' do
         expect(page).to have_content('Korean (Primary), Lao, Hawaiian')
         expect(page).to have_content(date_of_birth.strftime('%m/%d/%Y'))
         expect(page).to have_content('123-  -    ')
-        expect(page).to have_content(address.street_address)
-        expect(page).to have_content(address.city)
+        expect(page).to have_content(address[:street_address])
+        expect(page).to have_content(address[:city])
         expect(page).to have_content('New York')
-        expect(page).to have_content(address.zip)
-        expect(page).to have_content(address.type)
+        expect(page).to have_content(address[:zip])
+        expect(page).to have_content(address[:type])
         expect(page).to have_content('Hispanic/Latino Origin')
         expect(page).to have_content('Mexican - Yes')
         expect(page).to have_content('Asian - Korean (primary), '\
@@ -98,7 +106,7 @@ feature 'Show Screening' do
 
   context 'has participant of hispanic/latino origin but with no ethnicity details' do
     before do
-      existing_participant.ethnicity[:ethnicity_detail] = []
+      existing_participant[:ethnicity][:ethnicity_detail] = []
       existing_screening[:participants] = [existing_participant]
       stub_request(
         :get, ferb_api_url(FerbRoutes.intake_screening_path(existing_screening[:id]))
@@ -109,7 +117,7 @@ feature 'Show Screening' do
 
     scenario('display only hispanic/latino origin') do
       visit screening_path(id: existing_screening[:id])
-      within show_participant_card_selector(existing_participant.id) do
+      within show_participant_card_selector(existing_participant[:id]) do
         within '.card-body' do
           expect(page).to have_content('Hispanic/Latino Origin Yes')
           expect(page).not_to have_content('Yes-')
@@ -158,10 +166,10 @@ feature 'Show Screening' do
   scenario 'editing an existing participant on the show page' do
     visit screening_path(id: existing_screening[:id])
 
-    within show_participant_card_selector(existing_participant.id) do
+    within show_participant_card_selector(existing_participant[:id]) do
       click_link 'Edit person'
     end
 
-    expect(page).to have_css(edit_participant_card_selector(existing_participant.id))
+    expect(page).to have_css(edit_participant_card_selector(existing_participant[:id]))
   end
 end

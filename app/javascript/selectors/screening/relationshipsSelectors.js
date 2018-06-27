@@ -15,19 +15,9 @@ const isPersonCardExists = (people, relationship) => {
 }
 
 const isPersonNewlyCreated = (participants, person) => {
-  console.log(`1.participants ${JSON.stringify(participants)}`)
-  console.log(`2.person ${JSON.stringify(person)}`)
-  console.log(`2.1.participants.size ${JSON.stringify(participants.size)}`)
-  console.log(`2.2.person.gender ${person.gender}`)
-  console.log(`================================`)
   if (participants.size > 0 && person.legacy_descriptor) {
-    console.log(`3.person.legacy_descriptor ${JSON.stringify(person.legacy_descriptor)}`)
     const personNewlyCreated = participants.some((participant) => { 
-      console.log(`3.1 participant inside ${JSON.stringify(participant)}`)
-      console.log(`3.2 participant.get('legacy_id') ${JSON.stringify(participant.get('legacy_id'))}`)
-      console.log(`3.3 person.legacy_descriptor.legacy_id ${JSON.stringify(person.legacy_descriptor.legacy_id)}`)
       return participant.get('legacy_id') === person.legacy_descriptor.legacy_id && participant.get('newly_created_person') })
-    console.log(`4.personNewlyCreated ${personNewlyCreated}`)
     return personNewlyCreated
   }
   return false

@@ -3,7 +3,7 @@ import React from 'react'
 import ActionMenu from 'common/ActionMenu'
 import AttachLink from 'common/AttachLink'
 import RelationCard from 'common/RelationCard'
-import ScreeningCreateRelationship from 'views/ScreeningCreateRelationship'
+import CreateRelationshipContainer from 'containers/screenings/CreateRelationshipContainer'
 
 const actionsMenu = (row, pendingPeople, isScreening, screeningId, onClick) =>
   <ActionMenu
@@ -25,7 +25,6 @@ const createRelationsData = (firstName, data) => {
 }
 
 export const Relationships = ({people, onClick, screeningId, isScreening, pendingPeople = []}) => {
-  console.log(`relationshis - people ${JSON.stringify(people)}`)
   return (
   
   <div className='card-body no-pad-top'>
@@ -52,8 +51,7 @@ export const Relationships = ({people, onClick, screeningId, isScreening, pendin
             <div className='row'>
               <div className='col-md-9' />
               <div className='col-md-3'>
-                <ScreeningCreateRelationship showModal={person.newly_created_person} data={createRelationsData(person.name, person.relationships)}/>
-                {person.newly_created_person=false }
+                <CreateRelationshipContainer showModal={person.newly_created_person} person={person} data={createRelationsData(person.name, person.relationships)}/>
               </div>
             </div>
           </div>

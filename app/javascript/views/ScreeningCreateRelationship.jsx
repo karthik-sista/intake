@@ -146,7 +146,17 @@ export default class ScreeningCreateRelationship extends React.Component {
     this.modalTable = this.modalTable.bind(this)
   }
 
+  
+
+  componentDidMount() {
+    const person  = this.props.person
+    if (person.newly_created_person){
+      this.props.markThisPersonOld(person)
+    }
+  }
+
   handleShowModal() {
+    console.log('inside handleShowModal')
     this.setState({
       show: !this.state.show,
     })
@@ -219,6 +229,7 @@ export default class ScreeningCreateRelationship extends React.Component {
 
 ScreeningCreateRelationship.propTypes = {
   showModal: PropTypes.bool,
+  person: PropTypes.object,
   data: PropTypes.arrayOf(PropTypes.shape({
     focus_person: PropTypes.string,
     related_person: PropTypes.string,

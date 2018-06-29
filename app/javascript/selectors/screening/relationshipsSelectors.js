@@ -30,6 +30,7 @@ export const getPeopleSelector = createSelector(
   (participants, people, relationshipTypes) => people.map((person) => Map({
     name: nameFormatter({...person.toJS()}),
     newly_created_person: isPersonNewlyCreated(participants, person.toJS()),
+    legacy_descriptor: person.get('legacy_descriptor').toJS(),
     relationships: person.get('relationships', List()).map((relationship) => (
       Map({
         name: nameFormatter({

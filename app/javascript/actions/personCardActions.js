@@ -1,3 +1,6 @@
+import {
+  MARK_PERSON_OLD
+} from 'actions/actionTypes'
 export const CREATE_PERSON = 'CREATE_PERSON'
 export const CREATE_PERSON_COMPLETE = 'CREATE_PERSON_COMPLETE'
 export const DELETE_PERSON = 'DELETE_PERSON'
@@ -43,4 +46,8 @@ export function deleteSnapshotPerson(id) {
 }
 export function clearPeople() {
   return {type: CLEAR_PEOPLE}
+}
+
+export function markPersonOld(person) {
+  return {type: MARK_PERSON_OLD, payload: {person}}
 }

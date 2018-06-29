@@ -29,7 +29,6 @@ export function* sendPersonPayload(person) {
 
 function markNewlyCreatedPerson(person) {
   const newlyCreatePerson = {... person, newly_created_person: true}
-  console.log(`in function newlycreatedperson ${newlyCreatePerson}`)
   return newlyCreatePerson
 }
 export function* createParticipant({payload: {person}}) {

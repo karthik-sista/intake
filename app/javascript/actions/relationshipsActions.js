@@ -2,7 +2,6 @@ import {
   FETCH_RELATIONSHIPS,
   FETCH_RELATIONSHIPS_COMPLETE,
   CLEAR_RELATIONSHIPS,
-  MARK_PERSON_OLD,
 } from 'actions/actionTypes'
 
 export function clearRelationships() {
@@ -17,6 +16,4 @@ export function fetchRelationshipsFailure(error) {
 export function fetchRelationships(ids) {
   return {type: FETCH_RELATIONSHIPS, payload: {ids}}
 }
-export function markPersonOld(person) {
-  return {type: MARK_PERSON_OLD, payload: {person}}
-}
+

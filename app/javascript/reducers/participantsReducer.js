@@ -1,6 +1,7 @@
 import {
   CREATE_SCREENING_COMPLETE,
   FETCH_SCREENING_COMPLETE,
+  MARK_PERSON_OLD,
 } from 'actions/actionTypes'
 import {
   CREATE_PERSON_COMPLETE,
@@ -50,5 +51,15 @@ export default createReducer(List(), {
   },
   [CLEAR_PEOPLE]() {
     return List()
+  },
+
+  [MARK_PERSON_OLD](state, {payload: {person}, error}) {
+    if (error) {
+      return state
+    }
+    console.log(`Inside MARK_PERSON_OLD reducer state : ${JSON.stringify(state)}`)
+    console.log(`==============================`)
+    console.log(`Inside MARK_PERSON_OLD reducer person : ${JSON.stringify(person)}`)
+    return state
   },
 })

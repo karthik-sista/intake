@@ -3,8 +3,10 @@ import {Relationships} from 'common/Relationships'
 import {getPeopleSelector} from 'selectors/screening/relationshipsSelectors'
 import {createPerson} from 'actions/personCardActions'
 import {getScreeningIdValueSelector} from 'selectors/screeningSelectors'
+import {selectParticipants} from 'selectors/participantSelectors'
 
 const mapStateToProps = (state, _ownProps) => ({
+  participants: selectParticipants(state).toJS(),
   people: getPeopleSelector(state).toJS(),
   screeningId: getScreeningIdValueSelector(state),
   isScreening: true,

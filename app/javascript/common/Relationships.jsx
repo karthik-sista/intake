@@ -24,7 +24,9 @@ const createRelationsData = (firstName, data) => {
   return relationData
 }
 
-export const Relationships = ({people, onClick, screeningId, isScreening, pendingPeople = []}) => {
+export const Relationships = ({participants, people, onClick, screeningId, isScreening, pendingPeople = []}) => {
+  // console.log(`people in relationship: ${JSON.stringify(people)}`)
+  // console.log(`participants in relationship: ${JSON.stringify(participants)}`)
   return (
   
   <div className='card-body no-pad-top'>
@@ -51,7 +53,7 @@ export const Relationships = ({people, onClick, screeningId, isScreening, pendin
             <div className='row'>
               <div className='col-md-9' />
               <div className='col-md-3'>
-                <CreateRelationshipContainer showModal={person.newly_created_person} person={person} data={createRelationsData(person.name, person.relationships)}/>
+                <CreateRelationshipContainer showModal={person.newly_created_person} participants={participants} person={person} data={createRelationsData(person.name, person.relationships)}/>
               </div>
             </div>
           </div>
@@ -99,6 +101,7 @@ export const Relationships = ({people, onClick, screeningId, isScreening, pendin
 Relationships.propTypes = {
   isScreening: PropTypes.bool,
   onClick: PropTypes.func,
+  participants: PropTypes.arrayOf(PropTypes.object),
   pendingPeople: PropTypes.arrayOf(PropTypes.string),
   people: PropTypes.arrayOf(PropTypes.shape({
     name: PropTypes.string,

@@ -146,12 +146,28 @@ export default class ScreeningCreateRelationship extends React.Component {
     this.modalTable = this.modalTable.bind(this)
   }
 
+  selectParticipant(person, participants) {
+    let selectedParticipant = ''
+    participants.map((participant) => {
+      console.log(`person.legacy_descriptor.legacy_id: ${JSON.stringify(person.legacy_descriptor.legacy_id)}`)
+      console.log(`participant.legacy_id: ${participant.legacy_id}`)
+      console.log(`participant.newly_created_person: ${participant.newly_created_person}`)
   
+     if (participant.legacy_id === person.legacy_descriptor.legacy_id && participant.newly_created_person){
+      selectedParticipant  = participant
+     }
+    })
+    console.log(`selectedParticipant: ${JSON.stringify(selectedParticipant)}`)
+    return selectedParticipant
+  }
 
   componentDidMount() {
     const person  = this.props.person
-    if (person.newly_created_person){
-      this.props.markThisPersonOld(person)
+    const participants = this.props.participants
+    const newParticipant = this.selectParticipant(person, participants)
+    console.log(`In componenetDidMount person: ${JSON.stringify(newParticipant)}`)
+    if (newParticipant.newly_created_person){
+      this.props.markThisPersonOld(newParticipant)
     }
   }
 
@@ -229,6 +245,7 @@ export default class ScreeningCreateRelationship extends React.Component {
 
 ScreeningCreateRelationship.propTypes = {
   showModal: PropTypes.bool,
+  participants: PropTypes.arrayOf(PropTypes.object),
   person: PropTypes.object,
   data: PropTypes.arrayOf(PropTypes.shape({
     focus_person: PropTypes.string,

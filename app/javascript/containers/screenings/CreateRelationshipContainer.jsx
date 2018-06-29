@@ -1,5 +1,5 @@
 import {connect} from 'react-redux'
-import {markPersonOld} from 'actions/relationshipsActions'
+import {markPersonOld} from 'actions/personCardActions'
 import ScreeningCreateRelationship from 'views/ScreeningCreateRelationship'
 
 const mapDispatchToProps = (dispatch) => ({

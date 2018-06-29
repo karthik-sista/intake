@@ -2,6 +2,7 @@ import {
   CREATE_SCREENING_COMPLETE,
   FETCH_RELATIONSHIPS_COMPLETE,
   CLEAR_RELATIONSHIPS,
+  MARK_PERSON_OLD,
 } from 'actions/actionTypes'
 import {createReducer} from 'utils/createReducer'
 import {List, fromJS} from 'immutable'
@@ -40,4 +41,5 @@ export default createReducer(List(), {
   [CLEAR_RELATIONSHIPS]() {
     return List()
   },
+
 })

@@ -6,7 +6,6 @@ import {fetch as fetchUserInfoAction} from 'actions/userInfoActions'
 import {fetch as fetchSystemCodesAction} from 'actions/systemCodesActions'
 import {checkStaffPermission} from 'actions/staffActions'
 import {bindActionCreators} from 'redux'
-import {handleScroll} from '../utils/stickyHeader'
 import {GlobalHeader} from 'react-wood-duck'
 import Footer from '../views/Footer'
 import userNameFormatter from 'utils/userNameFormatter'
@@ -19,10 +18,6 @@ export class App extends React.Component {
     fetchSystemCodesAction()
     checkStaffPermission('add_sensitive_people')
     checkStaffPermission('has_state_override')
-    window.addEventListener('scroll', handleScroll)
-  }
-  componentWillUnmount() {
-    window.removeEventListener('scroll', handleScroll)
   }
   render() {
     const logoutUrl = `${config().base_path.replace(/\/$/, '')}/logout`

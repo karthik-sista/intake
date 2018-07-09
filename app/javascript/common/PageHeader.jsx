@@ -8,14 +8,39 @@ import {
   getPageErrorMessageValueSelector,
 } from 'selectors/errorsSelectors'
 
-export const PageHeader = ({button, errorMessage, hasError, pageTitle}) => (
-  <div id='page-sticky-header'>
-    <WoodDuckPageHeader pageTitle={pageTitle} button={button}>
-      {hasError && <PageError pageErrorMessage={errorMessage} />}
-    </WoodDuckPageHeader>
-  </div>
-)
+export class PageHeader extends React.Component {
+  constructor(props) {
+    super(props)
+    this.handleScroll = this.handleScroll.bind(this)
+  }
+  componentDidMount() {
+    window.addEventListener('scroll', this.handleScroll)
+  }
+  componentWillUnmount() {
+    window.removeEventListener('scroll', this.handleScroll)
+  }
 
+  handleScroll() {
+    let header
+    var headerSticky = header || document.getElementById('page-stickyHeader')
+    var sticky = headerSticky.offsetTop
+    if (window.pageYOffset > sticky) {
+      headerSticky.classList.add('sticky-pageheader')
+    } else {
+      headerSticky.classList.remove('sticky-pageheader')
+    }
+  }
+  render() {
+    const {button, errorMessage, hasError, pageTitle} = this.props
+    return (
+      <div id='page-stickyHeader'>
+        <WoodDuckPageHeader pageTitle={pageTitle} button={button}>
+          {hasError && <PageError pageErrorMessage={errorMessage} />}
+        </WoodDuckPageHeader>
+      </div>
+    )
+  }
+}
 PageHeader.propTypes = {
   button: PropTypes.object,
   errorMessage: PropTypes.string,

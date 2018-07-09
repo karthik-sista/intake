@@ -27,6 +27,15 @@
   }
 }
 
+
+
+.sticky-pageheader {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 3;
+}
+
 .error-panel {
   align-items: center;
   -webkit-box-align: center;

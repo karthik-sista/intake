@@ -9,9 +9,11 @@ import {
 } from 'selectors/errorsSelectors'
 
 export const PageHeader = ({button, errorMessage, hasError, pageTitle}) => (
-  <WoodDuckPageHeader pageTitle={pageTitle} button={button}>
-    {hasError && <PageError pageErrorMessage={errorMessage} />}
-  </WoodDuckPageHeader>
+  <div id='page-sticky-header'>
+    <WoodDuckPageHeader pageTitle={pageTitle} button={button}>
+      {hasError && <PageError pageErrorMessage={errorMessage} />}
+    </WoodDuckPageHeader>
+  </div>
 )
 
 PageHeader.propTypes = {

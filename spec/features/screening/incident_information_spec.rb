@@ -36,6 +36,7 @@ feature 'screening incident information card' do
 
   scenario 'screening<->address edit merging should not override unchanged values' do
     existing_screening[:incident_address][:street_address] = '33 Whatever'
+    click_link('Incident Information')
     stub_request(
       :put, ferb_api_url(FerbRoutes.intake_screening_path(existing_screening[:id]))
     ).and_return(json_body(existing_screening.to_json))
@@ -61,6 +62,8 @@ feature 'screening incident information card' do
   end
 
   scenario 'user edits incident card from screening edit page and saves' do
+    click_link('Narrative')
+    page.execute_script 'window.scrollBy(0,100)'
     within '#incident-information-card.edit' do
       expect(page).to have_field('Incident Date', with: '08/11/2016')
       expect(page).to have_select('Incident County', selected: 'Colusa', disabled: true)
@@ -85,6 +88,7 @@ feature 'screening incident information card' do
     stub_empty_history_for_screening(existing_screening)
 
     within '#incident-information-card.edit' do
+      page.execute_script 'window.scrollBy(0,500)'
       click_button 'Save'
     end
 

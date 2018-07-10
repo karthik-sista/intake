@@ -33,7 +33,7 @@ feature 'worker safety card' do
       expect(page).to have_content 'Dangerous Environment'
       expect(page).not_to have_content 'Firearms in Home'
     end
-
+    click_link('Worker Safety')
     click_link 'Edit worker safety'
 
     within '#worker-safety-card.edit' do

@@ -374,6 +374,7 @@ feature 'Relationship card' do
           describe '.attached-person' do
             scenario 'does not show "Attach" link' do
               assign_relationship(tag: 'td', element_text: 'Jake Campbell', link_text: 'Attach')
+              click_link('Relationship')
               find('td', text: 'Jake Campbell').find(:xpath, '..').find('div.dropdown').click
               expect(page).to have_no_content('Attach')
             end

@@ -55,6 +55,7 @@ feature 'Screening Decision Validations' do
   end
 
   context 'When page is opened in edit mode' do
+    Capybara.page.driver.browser.manage.window.maximize
     before do
       stub_and_visit_edit_screening(screening)
       stub_request(:get, ferb_api_url(FerbRoutes.intake_screening_path(screening[:id])))
@@ -67,7 +68,7 @@ feature 'Screening Decision Validations' do
         )
       ).and_return(json_body(involvements.to_json, status: 200))
       visit edit_screening_path(id: screening[:id])
-      page.driver.browser.navigate.refresh
+      # page.driver.browser.navigate.refresh
     end
 
     context 'Screening decision is set to nil on page load' do
@@ -100,7 +101,7 @@ feature 'Screening Decision Validations' do
           screening,
           with_updated_attributes: { screening_decision: 'promote_to_referral' }
         )
-
+        visit current_url + '#allegations-card'
         within '#decision-card.edit' do
           select 'Promote to referral', from: 'Screening Decision'
           blur_field
@@ -134,6 +135,7 @@ feature 'Screening Decision Validations' do
           expect(page).not_to have_content(allegation_error_message)
         end
 
+        visit current_url + '#allegations-card'
         within '.card.edit', text: 'Allegations' do
           fill_in_react_select "allegations_#{victim.id}_#{perpetrator.id}", with: 'General neglect'
         end
@@ -190,6 +192,7 @@ feature 'Screening Decision Validations' do
       end
 
       scenario 'Adding and removing allegations shows or hides error message' do
+        # visit current_url + '#allegations-card'
         within '#decision-card.edit' do
           select 'Promote to referral', from: 'Screening Decision'
           blur_field
@@ -200,6 +203,7 @@ feature 'Screening Decision Validations' do
           fill_in_react_select "allegations_#{victim.id}_#{perpetrator.id}", with: 'General neglect'
         end
 
+        click_link('Allegations')
         within '#decision-card.edit' do
           expect(page).not_to have_content(error_message)
         end
@@ -218,6 +222,7 @@ feature 'Screening Decision Validations' do
       let(:screening_decision) { 'promote_to_referral' }
 
       scenario 'Error message does not display until user has interacted with the field' do
+        visit current_url + '#allegations-card'
         within '#decision-card.edit' do
           expect(page).not_to have_content(error_message)
           find_field('Screening Decision').click
@@ -276,7 +281,6 @@ feature 'Screening Decision Validations' do
       scenario 'displays no error on initial load' do
         should_not_have_content error_message, inside: '#decision-card.edit'
       end
-
       scenario 'displays error on blur' do
         within '#decision-card.edit' do
           select 'Mark as Sensitive', from: 'Access Restrictions'
@@ -376,6 +380,7 @@ feature 'Screening Decision Validations' do
         end
 
         within '.card.show', text: 'Allegations' do
+          visit current_url + '#incident-information-card'
           click_link 'Edit'
         end
 

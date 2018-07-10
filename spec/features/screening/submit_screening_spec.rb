@@ -54,11 +54,18 @@ feature 'Submit Screening' do
         click_button 'Save'
       end
       expect(page).to have_css show_participant_card_selector(participant.id)
+      click_link('Narrative')
       within('.card', text: 'Narrative') { click_button 'Save' }
+      click_link('Incident Information')
+      page.execute_script 'window.scrollBy(0,100)'
       within('.card', text: 'Incident Information') { click_button 'Save' }
+      click_link('Allegations')
       within('.card', text: 'Allegations') { click_button 'Save' }
+      click_link('Worker Safety')
       within('.card', text: 'Worker Safety') { click_button 'Save' }
+      click_link('Cross Report')
       within('.card', text: 'Cross Report') { click_button 'Save' }
+      click_link('Decision')
       within('.card', text: 'Decision') { click_button 'Save' }
       expect(page).to have_button('Submit', disabled: false)
     end
@@ -67,13 +74,22 @@ feature 'Submit Screening' do
       visit edit_screening_path(existing_screening[:id])
       expect(page).to have_button('Submit', disabled: true)
       within('.card', text: 'Screening Information') { click_button 'Save' }
+      click_link('Narrative')
       within('.card', text: 'Narrative') { click_button 'Save' }
+      click_link('Incident Information')
+      page.execute_script 'window.scrollBy(0,100)'
       within('.card', text: 'Incident Information') { click_button 'Save' }
+      click_link('Allegations')
       within('.card', text: 'Allegations') { click_button 'Save' }
+      click_link('Worker Safety')
       within('.card', text: 'Worker Safety') { click_button 'Save' }
+      click_link('Cross Report')
       within('.card', text: 'Cross Report') { click_button 'Save' }
+      click_link('Decision')
       within('.card', text: 'Decision') { click_button 'Save' }
       expect(page).to have_button('Submit', disabled: true)
+      click_link("#{participant.first_name} #{participant.last_name}")
+      page.execute_script 'window.scrollBy(0,500)'
       within edit_participant_card_selector(participant.id) do
         click_button 'Save'
       end
@@ -89,12 +105,19 @@ feature 'Submit Screening' do
         click_button 'Save'
       end
       expect(page).to have_css show_participant_card_selector(participant.id)
+      click_link('Narrative')
       within('.card', text: 'Narrative') { click_button 'Save' }
+      click_link('Incident Information')
+      page.execute_script 'window.scrollBy(0,100)'
       within('.card', text: 'Incident Information') { click_button 'Save' }
+      click_link('Allegations')
       within('.card', text: 'Allegations') { click_button 'Save' }
+      click_link('Worker Safety')
       within('.card', text: 'Worker Safety') { click_button 'Save' }
+      click_link('Cross Report')
       within('.card', text: 'Cross Report') { click_button 'Save' }
       expect(page).to have_button('Submit', disabled: true)
+      click_link('Decision')
       within('.card', text: 'Decision') { click_button 'Save' }
       expect(page).to have_button('Submit', disabled: false)
     end
@@ -117,6 +140,7 @@ feature 'Submit Screening' do
       visit edit_screening_path(existing_screening[:id])
       save_all_cards
       expect(page).to have_button('Submit', disabled: true)
+      click_link('Screening Information')
       within('.card', text: 'Screening Information') { click_link 'Edit' }
 
       stub_screening_put_request_with_anything_and_return(
@@ -124,10 +148,9 @@ feature 'Submit Screening' do
         with_updated_attributes: { communication_method: 'fax' }
       )
 
-      within('.card', text: 'Screening Information') do
-        select 'Fax', from: 'Communication Method'
-        click_button 'Save'
-      end
+      select 'Fax', from: 'Communication Method'
+      click_link('Screening Information')
+      click_button 'Save'
 
       within('.card', text: 'Incident Information') { click_link 'Edit' }
 
@@ -168,8 +191,11 @@ feature 'Submit Screening' do
 
       visit edit_screening_path(existing_screening[:id])
       save_all_cards
+      click_link(person_name.to_s)
+      page.execute_script 'window.scrollBy(0,500)'
       within('.card', text: person_name) { click_button 'Save' }
       expect(page).to have_button('Submit', disabled: true)
+      click_link('People & Roles')
       within('.card', text: person_name) { click_link 'Edit' }
 
       person.ssn = '123-45-6789'
@@ -177,11 +203,10 @@ feature 'Submit Screening' do
         :put,
         ferb_api_url(FerbRoutes.screening_participant_path(existing_screening[:id], person.id))
       ).and_return(json_body(person.to_json))
-
-      within('.card', text: person_name) do
-        fill_in 'Social security number', with: '123-45-6789'
-        click_button 'Save'
-      end
+      click_link(person_name.to_s)
+      fill_in 'Social security number', with: '123-45-6789'
+      page.execute_script 'window.scrollBy(0,500)'
+      click_button 'Save'
 
       expect(page).to have_button('Submit', disabled: false)
     end

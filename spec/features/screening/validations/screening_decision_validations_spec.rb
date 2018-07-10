@@ -55,7 +55,6 @@ feature 'Screening Decision Validations' do
   end
 
   context 'When page is opened in edit mode' do
-    Capybara.page.driver.browser.manage.window.maximize
     before do
       stub_and_visit_edit_screening(screening)
       stub_request(:get, ferb_api_url(FerbRoutes.intake_screening_path(screening[:id])))

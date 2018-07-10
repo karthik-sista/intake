@@ -81,8 +81,11 @@ module ScreeningHelpers
     within('.card', text: 'Narrative') { click_button 'Save' }
     within('.card', text: 'Incident Information') { click_button 'Save' }
     within('.card', text: 'Allegations') { click_button 'Save' }
+    click_link('Worker Safety')
     within('.card', text: 'Worker Safety') { click_button 'Save' }
+    click_link('Cross Report')
     within('.card', text: 'Cross Report') { click_button 'Save' }
+    click_link('Decision')
     within('.card', text: 'Decision') { click_button 'Save' }
   end
 

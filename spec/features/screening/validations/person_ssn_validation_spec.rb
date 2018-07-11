@@ -240,13 +240,11 @@ feature 'Person Information Validations' do
       ).and_return(json_body(person.to_json))
 
       within('.card.edit', text: person_name) { click_button 'Save' }
-
-      within('.card.show', text: person_name) do
-        error_messages.each do |message|
-          expect(page).not_to have_content(message, count: 1)
-        end
-        click_link 'Edit'
+      error_messages.each do |message|
+        expect(page).not_to have_content(message, count: 1)
       end
+      click_link 'People & Roles'
+      click_link 'Edit'
 
       within('.card.edit', text: person_name) do
         error_messages.each do |message|

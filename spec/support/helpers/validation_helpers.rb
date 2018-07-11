@@ -42,12 +42,11 @@ module ValidationHelpers
 
     within('.card.edit.participant', text: person_name) { click_button 'Save' }
 
-    within('.card.show', text: person_name) do
-      error_messages.each do |message|
-        expect(page).to have_content(message, count: 1)
-      end
-      click_link 'Edit'
+    error_messages.each do |message|
+      expect(page).to have_content(message, count: 1)
     end
+    click_link('People & Roles')
+    click_link 'Edit'
 
     within('.card.edit.participant', text: person_name) do
       error_messages.each do |message|
@@ -67,12 +66,13 @@ module ValidationHelpers
       ferb_api_url(FerbRoutes.screening_participant_path(screening_id, person.id))
     ).and_return(json_body(person.to_json))
 
-    within('.card.edit.participant', text: person_name) do
-      error_messages.each do |message|
-        expect(page).not_to have_content(message)
-      end
-      click_button 'Save'
+    error_messages.each do |message|
+      expect(page).not_to have_content(message)
     end
+    click_link(person_name.to_s)
+    page.execute_script 'window.scrollBy(0,500)'
+    page.find(:xpath, '//*[@id=' +
+    %("participants-card-#{person.id}") + ']/div[2]/div[2]/div/div/button[2]').click
 
     within('.card.show', text: person_name) do
       error_messages.each do |message|

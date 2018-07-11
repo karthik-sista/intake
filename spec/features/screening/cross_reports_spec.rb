@@ -34,23 +34,24 @@ feature 'cross reports' do
 
     reported_on = DateTime.strptime('5/11/2018 11:10 AM', '%m/%d/%Y %l:%M %p')
     communication_method = 'Electronic Report'
-
+    expect(page).to_not have_content 'Communication Time and Method'
+    expect(page).to have_content 'County'
+    select 'Sacramento', from: 'County'
+    click_link('Cross Report')
+    find('label', text: /\ACounty Licensing\z/).click
+    select 'Hoverment Agency', from: 'County Licensing Agency Name'
+    find('label', text: /\ALaw Enforcement\z/).click
+    select 'The Sheriff', from: 'Law Enforcement Agency Name'
+    expect(page).to have_content 'Communication Time and Method'
+    fill_in_datepicker 'Cross Reported on Date', with: reported_on.strftime('%m/%d/%Y %l:%M %p')
+    expect(find_field('Cross Reported on Date').value).to \
+      eq(reported_on.strftime('%m/%d/%Y %l:%M %p'))
     within '#cross-report-card' do
-      expect(page).to_not have_content 'Communication Time and Method'
-      expect(page).to have_content 'County'
-      select 'Sacramento', from: 'County'
-      find('label', text: /\ACounty Licensing\z/).click
-      select 'Hoverment Agency', from: 'County Licensing Agency Name'
-      find('label', text: /\ALaw Enforcement\z/).click
-      select 'The Sheriff', from: 'Law Enforcement Agency Name'
-      expect(page).to have_content 'Communication Time and Method'
-      fill_in_datepicker 'Cross Reported on Date', with: reported_on.strftime('%m/%d/%Y %l:%M %p')
-      expect(find_field('Cross Reported on Date').value).to \
-        eq(reported_on.strftime('%m/%d/%Y %l:%M %p'))
       select communication_method, from: 'Communication Method'
-      click_button 'Save'
     end
-
+    click_link 'Cross Report'
+    page.execute_script 'window.scrollBy(0,500)'
+    page.find(:xpath, '//*[@id="cross-report-card"]/div[2]/div[5]/div/div/button[2]').click
     expect(
       a_request(
         :put, ferb_api_url(FerbRoutes.intake_screening_path(existing_screening[:id]))
@@ -95,25 +96,29 @@ feature 'cross reports' do
     stub_empty_history_for_screening(existing_screening)
     visit edit_screening_path(id: existing_screening[:id])
 
+    expect(page).to have_select('County', selected: 'Sacramento')
+    select 'San Francisco', from: 'County'
+    expect(page).to have_select('County', selected: 'San Francisco')
+
+    expect(find(:checkbox, 'County Licensing')).to_not be_checked
+
+    click_link('Cross Report')
+
+    find('label', text: /\ALaw Enforcement\z/).click
+    expect(find(:checkbox, 'Law Enforcement')).to be_checked
+
+    select 'The Sheriff', from: 'Law Enforcement Agency Name'
+    find('label', text: /\ADistrict Attorney\z/).click
+    page.execute_script 'window.scrollBy(0,100)'
+    fill_in_datepicker 'Cross Reported on Date', with: reported_on.strftime('%m/%d/%Y %l:%M %p')
+    expect(find_field('Cross Reported on Date').value).to \
+      eq(reported_on.strftime('%m/%d/%Y %l:%M %p'))
     within '#cross-report-card' do
-      expect(page).to have_select('County', selected: 'Sacramento')
-      select 'San Francisco', from: 'County'
-      expect(page).to have_select('County', selected: 'San Francisco')
-
-      expect(find(:checkbox, 'County Licensing')).to_not be_checked
-
-      find('label', text: /\ALaw Enforcement\z/).click
-      expect(find(:checkbox, 'Law Enforcement')).to be_checked
-
-      select 'The Sheriff', from: 'Law Enforcement Agency Name'
-      find('label', text: /\ADistrict Attorney\z/).click
-      fill_in_datepicker 'Cross Reported on Date', with: reported_on.strftime('%m/%d/%Y %l:%M %p')
-      expect(find_field('Cross Reported on Date').value).to \
-        eq(reported_on.strftime('%m/%d/%Y %l:%M %p'))
       select communication_method, from: 'Communication Method'
-      click_button 'Save'
     end
-
+    click_link 'Cross Report'
+    page.execute_script 'window.scrollBy(0,500)'
+    page.find(:xpath, '//*[@id="cross-report-card"]/div[2]/div[5]/div/div/button[2]').click
     expect(
       a_request(
         :put, ferb_api_url(FerbRoutes.intake_screening_path(existing_screening[:id]))
@@ -212,19 +217,22 @@ feature 'cross reports' do
     reported_on = DateTime.strptime('5/11/2018 11:10 AM', '%m/%d/%Y %l:%M %p')
     communication_method = 'Child Abuse Form'
 
+    select 'State of California', from: 'County'
+    click_link('Cross Report')
+    find('label', text: /\ACounty Licensing\z/).click
+    fill_in_datepicker 'Cross Reported on Date', with: reported_on.strftime('%m/%d/%Y %l:%M %p')
     within '#cross-report-card' do
-      select 'State of California', from: 'County'
-      find('label', text: /\ACounty Licensing\z/).click
-      fill_in_datepicker 'Cross Reported on Date', with: reported_on.strftime('%m/%d/%Y %l:%M %p')
       select communication_method, from: 'Communication Method'
-      find('label', text: /\ACounty Licensing\z/).click
-      find('label', text: /\ALaw Enforcement\z/).click
-      expect(page).to \
-        have_field('Cross Reported on Date', with: reported_on.strftime('%m/%d/%Y %l:%M %p'))
-      expect(page).to have_field('Communication Method', with: communication_method)
-
-      click_button 'Save'
     end
+    click_link('Cross Report')
+    find('label', text: /\ACounty Licensing\z/).click
+    find('label', text: /\ALaw Enforcement\z/).click
+    expect(page).to \
+      have_field('Cross Reported on Date', with: reported_on.strftime('%m/%d/%Y %l:%M %p'))
+    expect(page).to have_field('Communication Method', with: communication_method)
+    click_link 'Cross Report'
+    page.execute_script 'window.scrollBy(0,500)'
+    page.find(:xpath, '//*[@id="cross-report-card"]/div[2]/div[5]/div/div/button[2]').click
 
     expect(
       a_request(
@@ -259,24 +267,28 @@ feature 'cross reports' do
     reported_on = DateTime.strptime('5/11/2018 11:10 AM', '%m/%d/%Y %l:%M %p')
     communication_method = 'Child Abuse Form'
 
+    select 'San Francisco', from: 'County'
+    click_link('Cross Report')
+    find('label', text: /\ACounty Licensing\z/).click
+    fill_in_datepicker 'Cross Reported on Date', with: reported_on.strftime('%m/%d/%Y %l:%M %p')
     within '#cross-report-card' do
-      select 'San Francisco', from: 'County'
-      find('label', text: /\ACounty Licensing\z/).click
-      fill_in_datepicker 'Cross Reported on Date', with: reported_on.strftime('%m/%d/%Y %l:%M %p')
       select communication_method, from: 'Communication Method'
-      find('label', text: /\ACounty Licensing\z/).click
-      find('label', text: /\ALaw Enforcement\z/).click
-      expect(page).to \
-        have_field('Cross Reported on Date', with: reported_on.strftime('%m/%d/%Y %l:%M %p'))
-      expect(page).to have_field('Communication Method', with: communication_method)
-      select 'State of California', from: 'County'
-      find('label', text: /\ALaw Enforcement\z/).click
-      expect(page).to_not \
-        have_field('Cross Reported on Date', with: reported_on.strftime('%m/%d/%Y %l:%M %p'))
-      expect(page).to_not have_field('Communication Method', with: communication_method)
-
-      click_button 'Save'
     end
+    click_link('Cross Report')
+    find('label', text: /\ACounty Licensing\z/).click
+    find('label', text: /\ALaw Enforcement\z/).click
+    expect(page).to \
+      have_field('Cross Reported on Date', with: reported_on.strftime('%m/%d/%Y %l:%M %p'))
+    expect(page).to have_field('Communication Method', with: communication_method)
+    select 'State of California', from: 'County'
+    click_link('Cross Report')
+    find('label', text: /\ALaw Enforcement\z/).click
+    expect(page).to_not \
+      have_field('Cross Reported on Date', with: reported_on.strftime('%m/%d/%Y %l:%M %p'))
+    expect(page).to_not have_field('Communication Method', with: communication_method)
+    click_link 'Cross Report'
+    page.execute_script 'window.scrollBy(0,500)'
+    page.find(:xpath, '//*[@id="cross-report-card"]/div[2]/div[5]/div/div/button[2]').click
 
     expect(
       a_request(
@@ -311,22 +323,23 @@ feature 'cross reports' do
     reported_on = Date.today
     communication_method = 'Child Abuse Form'
 
+    select 'State of California', from: 'County'
+    click_link('Cross Report')
+    find('label', text: /\ACounty Licensing\z/).click
+    fill_in_datepicker 'Cross Reported on Date', with: reported_on
     within '#cross-report-card' do
-      select 'State of California', from: 'County'
-      find('label', text: /\ACounty Licensing\z/).click
-      fill_in_datepicker 'Cross Reported on Date', with: reported_on
       select communication_method, from: 'Communication Method'
-      find('label', text: /\ACounty Licensing\z/).click
-      click_button 'Save'
     end
-
+    click_link 'Cross Report'
+    page.execute_script 'window.scrollBy(0,500)'
+    page.find(:xpath, '//*[@id="cross-report-card"]/div[2]/div[5]/div/div/button[2]').click
+    click_link 'Cross Report'
     click_link 'Edit cross report'
 
-    within '#cross-report-card' do
-      select 'State of California', from: 'County'
-      find('label', text: /\ACounty Licensing\z/).click
-      expect(page).to have_field('Cross Reported on Date', with: '')
-      expect(page).to have_field('Communication Method', with: '')
-    end
+    select 'Sacramento', from: 'County'
+    click_link 'Cross Report'
+    find('label', text: /\ACounty Licensing\z/).click
+    expect(page).to have_field('Cross Reported on Date', with: '')
+    expect(page).to have_field('Communication Method', with: '')
   end
 end

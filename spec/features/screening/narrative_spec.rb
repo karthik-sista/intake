@@ -34,7 +34,7 @@ feature 'screening narrative card' do
     within '#narrative-card.show' do
       expect(page).to have_content 'This is my report narrative'
     end
-
+    visit current_url + '#search-card'
     click_link 'Edit narrative'
 
     within '#narrative-card.edit' do

@@ -59,7 +59,8 @@ feature 'Participant Address' do
         fill_in 'Zip', with: '55555'
         select 'Home', from: 'Address Type'
       end
-
+      visit current_url + '#search-card'
+      page.execute_script 'window.scrollBy(0,1000)'
       click_button 'Save'
     end
 
@@ -78,8 +79,8 @@ feature 'Participant Address' do
                    )
                  )
                ))).to have_been_made
-
     within show_participant_card_selector(marge.id) do
+      visit current_url
       click_link 'Edit'
       expect(page).to_not have_field('Address', with: marge.addresses.first.street_address)
       expect(page).to have_field('Address', with: '1234 Some Lane')

@@ -37,7 +37,8 @@ feature 'Participant Phone Number' do
         fill_in 'Phone Number', with: '7894561245'
         select 'Home', from: 'Phone Number Type'
       end
-
+      visit current_url + "#participants-card-#{marge.id}"
+      page.execute_script 'window.scrollBy(0,1000)'
       click_button 'Save'
     end
 
@@ -60,7 +61,8 @@ feature 'Participant Phone Number' do
       expect(page).to have_field('Phone Number', with: '(917)555-5555')
       expect(page).to have_field('Phone Number Type', with: 'Work')
       fill_in 'Phone Number', with: '7894561245'
-
+      visit current_url + "#participants-card-#{marge.id}"
+      page.execute_script 'window.scrollBy(0,1000)'
       click_button 'Save'
     end
 
@@ -85,9 +87,12 @@ feature 'Participant Phone Number' do
     marge.phone_numbers = []
 
     within edit_participant_card_selector(marge.id) do
+      visit current_url + "#participants-card-#{marge.id}"
+      page.execute_script 'window.scrollBy(0,1000)'
       click_link 'Delete phone number'
       expect(page).to_not have_content('(917) 555-5555')
-
+      visit current_url
+      page.execute_script 'window.scrollBy(0,1000)'
       click_button 'Save'
     end
 
@@ -104,6 +109,8 @@ feature 'Participant Phone Number' do
         fill_in 'Phone Number', with: 'as(343ld81103kjs809u38'
         expect(page).to have_field('Phone Number', with: '(343)811-0380')
       end
+      visit current_url + "#participants-card-#{marge.id}"
+      page.execute_script 'window.scrollBy(0,1000)'
       click_button 'Save'
 
       marge.phone_numbers.first.number = '3438110380'

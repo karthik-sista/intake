@@ -169,6 +169,7 @@ feature 'show allegations' do
       .and_return(json_body(screening.to_json, status: 200))
 
     within show_participant_card_selector(marge.id) do
+      visit current_url + '#search-card'
       click_button 'Remove person'
     end
 
@@ -178,9 +179,9 @@ feature 'show allegations' do
         expect(page).to_not have_content('Lisa')
         expect(page).to_not have_content('General neglect')
       end
-
-      click_link 'Edit allegations'
     end
+    click_link('Allegations')
+    click_link 'Edit allegations'
 
     within '.card.edit', text: 'Allegations' do
       within 'tbody' do
@@ -243,9 +244,11 @@ feature 'show allegations' do
     screening[:participants] = [lisa.as_json.symbolize_keys, marge.as_json.symbolize_keys]
     stub_request(:get, ferb_api_url(FerbRoutes.intake_screening_path(screening[:id])))
       .and_return(json_body(screening.to_json, status: 200))
-
+    url = current_url
     within edit_participant_card_selector(marge.id) do
       remove_react_select_option('Role', 'Perpetrator')
+      visit url + '#search-card'
+      page.execute_script 'window.scrollBy(0,1000)'
       click_button 'Save'
     end
 
@@ -258,6 +261,7 @@ feature 'show allegations' do
     end
 
     within show_participant_card_selector(marge.id) do
+      visit url
       click_link 'Edit person'
     end
 
@@ -272,6 +276,8 @@ feature 'show allegations' do
 
     within edit_participant_card_selector(marge.id) do
       fill_in_react_select('Role', with: 'Perpetrator')
+      visit url + '#search-card'
+      page.execute_script 'window.scrollBy(0,1500)'
       click_button 'Save'
     end
 
@@ -281,9 +287,9 @@ feature 'show allegations' do
         expect(page).to_not have_content('Lisa')
         expect(page).to_not have_content('General neglect')
       end
-
-      click_link 'Edit allegations'
     end
+    click_link('Allegations')
+    click_link 'Edit allegations'
 
     within '.card.edit', text: 'Allegations' do
       within 'tbody tr' do
@@ -326,8 +332,9 @@ feature 'show allegations' do
     end
 
     within '#screening-information-card.card.show' do
-      click_link 'Edit screening information'
     end
+    click_link('Screening Information')
+    click_link 'Edit screening information'
 
     within '#screening-information-card.card.edit' do
       fill_in 'Title/Name of Screening', with: 'Hello'

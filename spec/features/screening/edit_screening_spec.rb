@@ -140,6 +140,7 @@ feature 'Edit Screening' do
           'Worker Safety Alerts',
           with: ['Dangerous Animal on Premises', 'Firearms in Home', 'Hostile Aggressive Client']
         )
+        visit current_url + '#worker-safety-card'
         click_button 'Cancel'
         expect(page).to have_content('Dangerous Animal on Premises')
         expect(page).to have_content('Firearms in Home')
@@ -178,6 +179,8 @@ feature 'Edit Screening' do
           with: ['Dangerous Animal on Premises', 'Firearms in Home',
                  'Hostile Aggressive Client', 'Severe Mental Health Status']
         )
+        visit current_url + '#screening-information-card'
+        page.execute_script 'window.scrollTo(0,0)'
         click_button 'Save'
       end
       expect(
@@ -344,7 +347,9 @@ feature 'individual card save' do
       ).and_return(json_body(updated_screening.to_json))
       stub_empty_relationships
       stub_empty_history_for_screening(existing_screening)
+      visit current_url.split('#')[0] + '#narrative-card'
       fill_in_datepicker 'Incident Date', with: '02/12/1996'
+      page.execute_script 'window.scrollBy(0,500)'
       click_button 'Save'
       expect(
         a_request(
@@ -397,6 +402,7 @@ feature 'individual card save' do
 
     within '#cross-report-card' do
       select 'State of California', from: 'County'
+      visit current_url + '#cross-report-card'
       find('label', text: 'District Attorney').click
       select 'LA District Attorney - Criminal Division', from: 'District Attorney Agency Name'
       click_button 'Save'
@@ -407,7 +413,7 @@ feature 'individual card save' do
         :put, ferb_api_url(FerbRoutes.intake_screening_path(existing_screening[:id]))
       )
     ).to have_been_made
-
+    click_link('Cross Report')
     within '#cross-report-card' do
       click_link 'Edit cross report'
       expect(page).to have_select(
@@ -461,6 +467,7 @@ feature 'individual card save' do
     within '#worker-safety-card' do
       fill_in_react_select 'Worker Safety Alerts', with: 'Dangerous Animal on Premises'
       fill_in 'safety_information', with: 'Important information!'
+      visit current_url + '#worker-safety-card'
       click_button 'Save'
     end
     expect(
@@ -487,7 +494,7 @@ feature 'individual card save' do
       ).and_return(json_body(existing_screening.to_json))
       stub_empty_relationships
       stub_empty_history_for_screening(existing_screening)
-
+      visit current_url.split('#')[0] + '#narrative-card'
       fill_in_datepicker 'Incident Date', with: '02-12-1996'
       fill_in 'Address', with: '33 Whatever Rd'
       fill_in 'City', with: 'Modesto'

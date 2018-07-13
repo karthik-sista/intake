@@ -130,7 +130,9 @@ feature 'edit allegations' do
       .and_return(json_body(screening.to_json, status: 200))
 
     within edit_participant_card_selector(marge.id) do
+      visit current_url + '#search-card'
       remove_react_select_option('Role', 'Perpetrator')
+      page.execute_script 'window.scrollBy(0,1000)'
       click_button 'Save'
     end
 
@@ -142,6 +144,7 @@ feature 'edit allegations' do
     end
 
     within show_participant_card_selector(marge.id) do
+      visit current_url
       click_link 'Edit person'
     end
 
@@ -156,6 +159,7 @@ feature 'edit allegations' do
 
     within edit_participant_card_selector(marge.id) do
       fill_in_react_select('Role', with: 'Perpetrator')
+      page.execute_script 'window.scrollBy(0,1000)'
       click_button 'Save'
     end
 
@@ -164,9 +168,9 @@ feature 'edit allegations' do
         expect(page).to_not have_content('Marge')
         expect(page).to_not have_content('Lisa')
       end
-
-      click_link 'Edit allegations'
     end
+    click_link('Allegations')
+    click_link 'Edit allegations'
 
     within '.card.edit', text: 'Allegations' do
       within 'tbody tr' do
@@ -209,6 +213,7 @@ feature 'edit allegations' do
       stub_request(:put,
         ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], marge.id)))
         .and_return(json_body(marge.to_json, status: 200))
+      page.execute_script 'window.scrollBy(0,1000)'
       click_button 'Save'
     end
 
@@ -228,6 +233,8 @@ feature 'edit allegations' do
 
     within edit_participant_card_selector(lisa.id) do
       fill_in_react_select('Role', with: 'Victim')
+      visit current_url + '#search-card'
+      page.execute_script 'window.scrollBy(0,1500)'
       click_button 'Save'
     end
 
@@ -506,7 +513,7 @@ feature 'edit allegations' do
       stub_request(:delete,
         ferb_api_url(FerbRoutes.delete_screening_participant_path(screening[:id], marge.id)))
         .and_return(json_body(nil, status: 204))
-
+      visit current_url + '#search-card'
       click_button 'Remove person'
     end
 
@@ -572,14 +579,16 @@ feature 'edit allegations' do
       .and_return(json_body(screening.to_json, status: 200))
 
     within edit_participant_card_selector(lisa.id) do
+      visit current_url
       remove_react_select_option('Role', 'Victim')
+      page.execute_script 'window.scrollBy(0,700)'
       click_button 'Save'
     end
 
     within show_participant_card_selector(lisa.id) do
+      visit current_url + "#participant-card-#{marge.id}"
       click_link 'Edit person'
     end
-
     within '.card.show', text: 'Allegations' do
       expect(page).to have_no_content('Lisa')
       expect(page).to have_no_content('Marge')
@@ -667,11 +676,14 @@ feature 'edit allegations' do
       .and_return(json_body(screening.to_json, status: 200))
 
     within edit_participant_card_selector(marge.id) do
+      visit current_url + '#search-card'
       remove_react_select_option('Role', 'Perpetrator')
+      page.execute_script 'window.scrollBy(0,1000)'
       click_button 'Save'
     end
 
     within show_participant_card_selector(marge.id) do
+      visit current_url
       click_link 'Edit person'
     end
 
@@ -679,8 +691,9 @@ feature 'edit allegations' do
       expect(page).to have_no_content('Lisa')
       expect(page).to have_no_content('Marge')
       expect(page).to have_no_content('General neglect')
-      click_link 'Edit allegations'
     end
+    click_link('Allegations')
+    click_link 'Edit allegations'
 
     within '.card.edit', text: 'Allegations' do
       expect(page).to have_content('Lisa')
@@ -697,9 +710,9 @@ feature 'edit allegations' do
 
     within edit_participant_card_selector(marge.id) do
       fill_in_react_select('Role', with: 'Perpetrator')
+      page.execute_script 'window.scrollBy(0,800)'
       click_button 'Save'
     end
-
     within '.card.edit', text: 'Allegations' do
       expect(page).to have_content('Lisa')
       expect(page).to have_content('Marge')

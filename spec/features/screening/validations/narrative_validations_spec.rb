@@ -61,6 +61,7 @@ feature 'Narrative Card Validations' do
       end
       blur_field
       should_have_content error_message, inside: '#narrative-card.edit'
+      visit current_url + '#narrative-card'
       save_card('narrative')
       should_have_content error_message, inside: '#narrative-card .card-body'
     end

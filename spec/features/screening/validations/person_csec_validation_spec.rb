@@ -36,10 +36,12 @@ feature 'CSEC validation' do
         expect(page).not_to have_content(csec_start_date_error_message)
         click_button 'Cancel'
         expect(page).to have_content(csec_start_date_error_message)
+        visit current_url + '#search-card'
         click_link 'Edit'
         fill_in_datepicker 'CSEC Start Date', with: '', blur: false
         expect(page).not_to have_content(csec_start_date_error_message)
         blur_field
+        page.execute_script 'window.scrollBy(0,100)'
         expect(page).to have_content(csec_start_date_error_message)
         fill_in_datepicker 'CSEC Start Date', with: '06-11-2018', blur: true
         expect(page).not_to have_content(csec_start_date_error_message)
@@ -55,7 +57,6 @@ feature 'CSEC validation' do
         stub_request(:put,
           ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], victim.id)))
           .and_return(json_body(updated_participant.to_json, status: 200))
-
         click_button 'Save'
         expect(page).to have_content('CSEC Start Date')
         expect(page).not_to have_content(csec_start_date_error_message)
@@ -74,7 +75,9 @@ feature 'CSEC validation' do
         expect(page).not_to have_content(csec_types_error_message)
         click_button 'Cancel'
         expect(page).to have_content(csec_types_error_message)
+        visit current_url + '#search-card'
         click_link 'Edit'
+        page.execute_script 'window.scrollBy(0,100)'
         expect(page).not_to have_content(csec_types_error_message)
         fill_in_react_select 'CSEC Types', with: ''
         blur_field

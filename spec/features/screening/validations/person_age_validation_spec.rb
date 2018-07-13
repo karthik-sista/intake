@@ -56,6 +56,7 @@ feature 'Person Information Validations' do
 
           within('.card.show', text: person_name) do
             expect(page).not_to have_content(error_message)
+            visit current_url + '#search-card'
             click_link 'Edit'
           end
 
@@ -137,6 +138,8 @@ feature 'Person Information Validations' do
           person_updates: { date_of_birth: valid_date_of_birth }
         ) do
           within edit_participant_card_selector(person.id) do
+            visit current_url.split('#')[0] + "#participant-card-#{person.id}"
+            page.execute_script 'window.scrollBy(0,200)'
             fill_in_datepicker 'Date of birth', with: valid_date_of_birth
           end
         end
@@ -150,8 +153,11 @@ feature 'Person Information Validations' do
           person_updates: { date_of_birth: valid_date_of_birth }
         ) do
           within edit_participant_card_selector(person.id) do
+            visit current_url.split('#')[0] + "#participant-card-#{person.id}"
+            page.execute_script 'window.scrollBy(0,200)'
             fill_in_datepicker 'Date of birth', with: valid_date_of_birth
           end
+          click_link 'Screening Information'
           fill_in_datepicker 'Screening Start Date/Time', with: Time.new(2020, 1, 13)
         end
       end
@@ -170,6 +176,7 @@ feature 'Person Information Validations' do
 
           within('.card.show', text: person_name) do
             expect(page).not_to have_content(error_message)
+            visit current_url + '#search-card'
             click_link 'Edit'
           end
 
@@ -191,6 +198,8 @@ feature 'Person Information Validations' do
             person_updates: { date_of_birth: valid_date_of_birth }
           ) do
             within edit_participant_card_selector(person.id) do
+              visit current_url.split('#')[0] + "#participant-card-#{person.id}"
+              page.execute_script 'window.scrollBy(0,200)'
               fill_in_datepicker 'Date of birth', with: valid_date_of_birth
             end
           end

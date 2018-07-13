@@ -95,9 +95,11 @@ feature 'Edit Person' do
           fill_in 'Social security number', with: 111_111_111
           select 'Sr', from: 'Suffix'
         end
-        click_button 'Save'
       end
-
+      click_link("#{marge.first_name} #{marge.last_name}")
+      page.execute_script 'window.scrollBy(0,1000)'
+      page.find(:xpath, '//*[@id=' +
+       %("participants-card-#{marge.id}") + ']/div[2]/div[2]/div/div/button[2]').click
       expect(
         a_request(:put,
           ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], marge.id)))
@@ -185,9 +187,11 @@ feature 'Edit Person' do
             select 'Home', from: 'Address Type'
           end
         end
-        click_button 'Save'
       end
-
+      click_link("#{marge.first_name} #{marge.last_name}")
+      page.execute_script 'window.scrollBy(0,1000)'
+      page.find(:xpath, '//*[@id=' +
+      %("participants-card-#{marge.id}") + ']/div[2]/div[2]/div/div/button[2]').click
       expect(
         a_request(:put,
           ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], homer.id)))
@@ -417,10 +421,13 @@ feature 'Edit Person' do
       ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], marge.id)))
       .and_return(json_body(marge.to_json, status: 200))
 
-    within edit_participant_card_selector(marge.id) do
-      click_button 'Save'
-    end
-
+    # within edit_participant_card_selector(marge.id) do
+    # click_button 'Save'
+    # end
+    click_link("#{marge.first_name} #{marge.last_name}")
+    page.execute_script 'window.scrollBy(0,1000)'
+    page.find(:xpath, '//*[@id=' +
+    %("participants-card-#{marge.id}") + ']/div[2]/div[2]/div/div/button[2]').click
     expect(
       a_request(:put,
         ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], marge.id)))
@@ -443,8 +450,9 @@ feature 'Edit Person' do
       stub_request(:put,
         ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], marge.id)))
         .and_return(json_body(marge.to_json, status: 200))
-
-      click_button 'Save'
+      page.execute_script 'window.scrollBy(0,1000)'
+      page.find(:xpath, '//*[@id=' +
+      %("participants-card-#{marge.id}") + ']/div[2]/div[2]/div/div/button[2]').click
       expect(a_request(:put,
         ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], marge.id)))
         .with(body: hash_including(
@@ -471,6 +479,7 @@ feature 'Edit Person' do
         expect(page).to have_field('Social security number', with: old_ssn)
         fill_in 'Social security number', with: new_ssn
         expect(page).to have_field('Social security number', with: new_ssn)
+        page.execute_script 'window.scrollBy(0,1550)'
         click_button 'Cancel'
       end
     end
@@ -493,8 +502,10 @@ feature 'Edit Person' do
 
     within edit_participant_card_selector(marge.id) do
       fill_in 'Social security number', with: new_ssn
-      click_button 'Cancel'
     end
+    page.execute_script 'window.scrollBy(0,1500)'
+    page.find(:xpath, '//*[@id=' +
+    %("participants-card-#{marge.id}") + ']/div[2]/div[2]/div/div/button[1]').click
 
     expect(page).to have_content marge_formatted_name
     expect(page).to have_link 'Edit person'
@@ -512,12 +523,10 @@ feature 'Edit Person' do
       stub_request(:put,
         ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], marge.id)))
         .and_return(json_body(marge.to_json, status: 200))
-
-      within '.card-body' do
-        click_button 'Save'
-      end
     end
-
+    page.execute_script 'window.scrollBy(0,1000)'
+    page.find(:xpath, '//*[@id=' +
+    %("participants-card-#{marge.id}") + ']/div[2]/div[2]/div/div/button[2]').click
     expect(
       a_request(:put,
         ferb_api_url(FerbRoutes.screening_participant_path(screening[:id], marge.id)))
@@ -594,6 +603,8 @@ feature 'Edit Person' do
     within edit_participant_card_selector(marge.id) do
       expect(page).to have_field('Approximate Age', disabled: true)
       expect(page).to have_field('Approximate Age Units', disabled: true)
+      visit current_url.split('#')[0] + "#participant-card-#{marge.id}"
+      page.execute_script 'window.scrollBy(0,1200)'
       fill_in_datepicker 'Date of birth', with: ''
       expect(page).to have_field('Approximate Age', disabled: false)
       expect(page).to have_field('Approximate Age Units', disabled: false)
@@ -671,6 +682,7 @@ feature 'Edit Person' do
           fill_in_react_select 'Parent/Guardian Provided Medical Questionaire', with: 'Declined'
           fill_in_datepicker 'Medical Questionaire Return Date', with: '01-01-2011'
         end
+        page.execute_script 'window.scrollBy(0,200)'
         click_button 'Save'
       end
 

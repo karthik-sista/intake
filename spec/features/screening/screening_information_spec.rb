@@ -54,6 +54,7 @@ feature 'screening information card' do
       fill_in 'Assigned Social Worker', with: 'Mariko'
       select 'Safely Surrendered Baby', from: 'Report Type'
       select 'Phone', from: 'Communication Method'
+      page.execute_script 'window.scrollTo(0,0)'
       click_button 'Save'
     end
 
@@ -89,6 +90,7 @@ feature 'screening information card' do
       fill_in 'Assigned Social Worker', with: 'George Michael'
       select 'Commercially Sexually Exploited Children (CSEC)', from: 'Report Type'
       select 'In Person', from: 'Communication Method'
+      page.execute_script 'window.scrollTo(0,0)'
       fill_in_datepicker 'Screening Start Date/Time', with: '08/19/2016 3:00 AM'
       fill_in_datepicker 'Screening End Date/Time', with: '08/24/2016 3:00 AM'
       click_button 'Cancel'

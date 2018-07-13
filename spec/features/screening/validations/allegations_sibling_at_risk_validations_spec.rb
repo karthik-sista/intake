@@ -52,13 +52,15 @@ feature 'Allegations Sibling At Risk Validations' do
     scenario 'User sees no sibling error' do
       within '.card.edit', text: 'Allegations' do
         expect(page).not_to have_content(sibling_at_risk_error)
+        visit current_url
         click_button 'Cancel'
       end
 
       within '.card.show', text: 'Allegations' do
         expect(page).not_to have_content(sibling_at_risk_error)
-        click_link 'Edit'
       end
+      click_link('Allegations')
+      click_link 'Edit'
     end
 
     scenario 'User sees error when adding at risk allegation' do
@@ -86,12 +88,13 @@ feature 'Allegations Sibling At Risk Validations' do
         )
 
         blur_field # "allegations_#{victim.id}_#{perpetrator.id}"
-
+        visit current_url
         click_button 'Save'
       end
 
       within '.card.show', text: 'Allegations' do
         expect(page).to have_content(sibling_at_risk_error)
+        visit current_url + '#allegations-card'
         click_link 'Edit'
       end
     end
@@ -157,13 +160,15 @@ feature 'Allegations Sibling At Risk Validations' do
     scenario 'User sees warning about sibling at risk' do
       within '.card.edit', text: 'Allegations' do
         expect(page).to have_content(sibling_at_risk_error)
+        visit current_url
         click_button 'Cancel'
       end
 
       within '.card.show', text: 'Allegations' do
         expect(page).to have_content(sibling_at_risk_error)
-        click_link 'Edit'
       end
+      click_link('Allegations')
+      click_link 'Edit'
     end
 
     scenario 'User can fix warning about at risk' do

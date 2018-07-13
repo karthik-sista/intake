@@ -32,8 +32,9 @@ feature 'Allegations Validations' do
 
     within '.card.show', text: 'Allegations' do
       expect(page).to have_content(error_message)
-      click_link 'Edit'
     end
+    click_link('Allegations')
+    click_link 'Edit'
 
     within '.card.edit', text: 'Allegations' do
       fill_in_react_select "allegations_#{victim.id}_#{perpetrator.id}", with: 'General neglect'
@@ -48,6 +49,7 @@ feature 'Allegations Validations' do
 
     within '.card.edit', text: 'Allegations' do
       expect(page).not_to have_content(error_message)
+      visit current_url
       click_button 'Cancel'
     end
 

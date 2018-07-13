@@ -54,7 +54,6 @@ feature 'screening information card' do
       fill_in 'Assigned Social Worker', with: 'Mariko'
       select 'Safely Surrendered Baby', from: 'Report Type'
       select 'Phone', from: 'Communication Method'
-      byebug
       click_button 'Save'
     end
 

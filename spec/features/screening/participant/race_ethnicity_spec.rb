@@ -104,6 +104,8 @@ feature 'Race & Ethnicity' do
         within '#race' do
           expect(find('input[value="Unknown"]')).to be_checked
           expect(find('input[value="Asian"]')).to be_disabled
+          visit current_url + '#search-card'
+          page.execute_script 'window.scrollBy(0,1800)'
           find('label', text: 'Unknown').click
           find('label', text: 'Asian').click
           select 'Hmong', from: "participant-#{homer.id}-Asian-race-detail"

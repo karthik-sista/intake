@@ -422,7 +422,7 @@ feature 'searching a participant in autocompleter' do
         a_request(:post, search_path)
         .with(body: hash_including('search_after' => %w[result_24_score result_24_uuid]))
       ).to have_been_made
-
+      click_link 'Screening Information'
       within '#search-card', text: 'Search' do
         click_button 'Show more results'
       end

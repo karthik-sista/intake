@@ -88,15 +88,14 @@ feature 'Allegations Sibling At Risk Validations' do
         )
 
         blur_field # "allegations_#{victim.id}_#{perpetrator.id}"
-        visit current_url
+        visit current_url + '#allegations-card'
         click_button 'Save'
       end
-
       within '.card.show', text: 'Allegations' do
         expect(page).to have_content(sibling_at_risk_error)
-        visit current_url + '#allegations-card'
-        click_link 'Edit'
       end
+      click_link('Allegations')
+      click_link 'Edit'
     end
 
     scenario 'User can make the error go away' do
@@ -382,7 +381,7 @@ feature 'Allegations Sibling At Risk Validations' do
         )
 
         blur_field # "allegations_#{victim2.id}_#{perpetrator.id}"
-
+        visit current_url + '#allegations-card'
         click_button 'Save'
       end
 

@@ -1,19 +1,28 @@
 import React from 'react'
 import {shallow} from 'enzyme'
-import {ModalComponent} from 'react-wood-duck'
 import ActionMenu from 'common/relationship/ActionMenu'
 import AttachLink from 'common/relationship/AttachLink'
+import EditRelationshipModal from 'common/relationship/EditRelationshipModal'
 
 describe('ActionMenu', () => {
   const props = {
     isScreening: true,
     onClick: () => {},
     pendingPeople: [],
+    person: {
+      name: 'Goku',
+    },
     screeningId: '1',
     relationship: {
+      absent_parent_code: 'Y',
       name: 'Gohan',
-      type: 'son',
+      age: '30 yrs',
+      gender: 'M',
       person_card_exists: true,
+      secondaryRelationship: 'Father',
+      same_home_code: 'N',
+      type: 'son',
+      type_code: '210',
     },
   }
   const renderActionMenu = (props) => shallow(<ActionMenu {...props}/>)
@@ -35,7 +44,7 @@ describe('ActionMenu', () => {
   })
 
   it('renders ModalComponent', () => {
-    expect(renderActionMenu(props).find(ModalComponent).length).toBe(1)
+    expect(renderActionMenu(props).find(EditRelationshipModal).length).toBe(1)
   })
 
   describe('closeModal', () => {
@@ -56,14 +65,6 @@ describe('ActionMenu', () => {
       expect(instance.state.show).toBe(false)
       instance.handleShowModal()
       expect(instance.state.show).toBe(true)
-    })
-  })
-
-  describe('renderFooter', () => {
-    it('renders two buttons', () => {
-      const modalRender = renderActionMenu(props).find(ModalComponent)
-
-      expect(modalRender.shallow().find('button').length).toBe(2)
     })
   })
 })

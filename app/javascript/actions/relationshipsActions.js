@@ -2,7 +2,6 @@ import {
   FETCH_RELATIONSHIPS,
   FETCH_RELATIONSHIPS_COMPLETE,
   CLEAR_RELATIONSHIPS,
-  SET_RELATIONSHIP_FORM_FIELD,
 } from 'actions/actionTypes'
 
 export function clearRelationships() {
@@ -16,7 +15,4 @@ export function fetchRelationshipsFailure(error) {
 }
 export function fetchRelationships(ids) {
   return {type: FETCH_RELATIONSHIPS, payload: {ids}}
-}
-export function setField(fieldSet, personId, relationship, value) {
-  return {type: SET_RELATIONSHIP_FORM_FIELD, payload: {fieldSet, personId, relationship, value}}
 }

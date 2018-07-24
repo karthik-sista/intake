@@ -2,7 +2,6 @@ import {
   CREATE_SCREENING_COMPLETE,
   FETCH_RELATIONSHIPS_COMPLETE,
   CLEAR_RELATIONSHIPS,
-  SET_RELATIONSHIP_FORM_FIELD,
 } from 'actions/actionTypes'
 import {createReducer} from 'utils/createReducer'
 import {List, fromJS} from 'immutable'
@@ -40,12 +39,5 @@ export default createReducer(List(), {
   },
   [CLEAR_RELATIONSHIPS]() {
     return List()
-  },
-  [SET_RELATIONSHIP_FORM_FIELD](state, {payload: {fieldSet, personId, relationship, value}}) {
-    const indexOfPerson = state.findIndex((x) => x.get('legacy_id') === personId)
-    const indexOfRelationship = state.getIn([indexOfPerson, 'relationships']).findIndex((x) =>
-      x.getIn(['legacy_descriptor', 'legacy_id']) === relationship.legacy_descriptor.legacy_id)
-
-    return state.setIn([indexOfPerson, 'relationships', indexOfRelationship, fieldSet], fromJS(value))
   },
 })

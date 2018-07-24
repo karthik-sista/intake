@@ -17,8 +17,3 @@ export const userPrivilegesSelector = createSelector(
   getUserInfo,
   (userInfo) => userInfo.get('privileges') || List()
 )
-
-export const selectStaffId = createSelector(
-  getUserInfo,
-  (userInfo) => userInfo.get('staff_id')
-)

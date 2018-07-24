@@ -6,7 +6,6 @@ import * as personCardActions from 'actions/personCardActions'
 import {clearRelationships} from 'actions/relationshipsActions'
 import {fetchHistoryOfInvolvements, clearHistoryOfInvolvement} from 'actions/historyOfInvolvementActions'
 import {setPageMode} from 'actions/screeningPageActions'
-import {selectStaffId} from 'selectors/userInfoSelectors'
 import {getScreeningSubmissionErrorsSelector, getApiValidationErrorsSelector} from 'selectors/errorsSelectors'
 import {getScreeningTitleSelector, getScreeningIsReadOnlySelector} from 'selectors/screeningSelectors'
 import {selectParticipants} from 'selectors/participantSelectors'
@@ -16,7 +15,7 @@ import {
   getPeopleHaveErrorsSelector,
 } from 'selectors/screening/screeningPageSelectors'
 
-export function mapStateToProps(state, _ownProps) {
+function mapStateToProps(state, _ownProps) {
   return {
     disableSubmitButton: !getAllCardsAreSavedValueSelector(state) ||
         getScreeningHasErrorsSelector(state) ||
@@ -30,7 +29,6 @@ export function mapStateToProps(state, _ownProps) {
     hasApiValidationErrors: Boolean(getApiValidationErrorsSelector(state).size),
     screeningTitle: getScreeningTitleSelector(state),
     submitReferralErrors: getScreeningSubmissionErrorsSelector(state).toJS(),
-    staffId: selectStaffId(state),
   }
 }
 

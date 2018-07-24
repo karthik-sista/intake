@@ -25,7 +25,6 @@ import CrossReportShowContainer from 'containers/screenings/CrossReportShowConta
 import DecisionFormContainer from 'containers/screenings/DecisionFormContainer'
 import DecisionShowContainer from 'containers/screenings/DecisionShowContainer'
 import PageHeader from 'common/PageHeader'
-import {logEvent} from 'utils/analytics'
 
 const isDuplicatePerson = (participants, personOnScreening) => (
   participants
@@ -52,23 +51,6 @@ export class ScreeningPage extends React.Component {
       fetchScreening(id)
       fetchHistoryOfInvolvements('screenings', id)
     } else { fetchScreening(null) }
-    if (this.props.staffId !== undefined) {
-      logEvent('screeningPage', {
-        staffId: this.props.staffId,
-        action: 'visited',
-      })
-    }
-  }
-
-  componentDidUpdate(prevProps) {
-    if (this.props.staffId !== prevProps.staffId) {
-      if (this.props.staffId !== undefined) {
-        logEvent('screeningPage', {
-          staffId: this.props.staffId,
-          action: 'visited',
-        })
-      }
-    }
   }
 
   componentWillUnmount() {
@@ -235,7 +217,6 @@ ScreeningPage.propTypes = {
   reference: PropTypes.string,
   referralId: PropTypes.string,
   screeningTitle: PropTypes.string,
-  staffId: PropTypes.string,
   submitReferralErrors: PropTypes.array,
 }
 

@@ -5,11 +5,6 @@ import DateField from 'common/DateField'
 import {RELATIONSHIP_TYPES} from 'enums/RelationshipTypes'
 import {GENDERS_LEGACY} from 'enums/Genders'
 
-const propTypes = {
-  onChange: PropTypes.func,
-  person: PropTypes.object,
-  relationship: PropTypes.object,
-}
 const isAbsentParentDisabled = (type) => (
   !type.toLowerCase().match(/\bfather\b|\bmother\b|\bparent\b/)
 )
@@ -53,7 +48,7 @@ const EditRelationshipForm = ({onChange, person, relationship}) => {
                 label='Relationship Type'
                 value={relationship.type_code}
                 aria-label='Relationship Type'
-                onChange={({target}) => onChange('indexed_person_relationship', person.legacy_id, relationship, target.value)}
+                onChange={({target}) => onChange('type_code', target.value)}
               >
                 <option key=''/>
                 {RELATIONSHIP_TYPES.map((relationship) =>
@@ -87,9 +82,8 @@ const EditRelationshipForm = ({onChange, person, relationship}) => {
             id='same_home_code'
             label='Live at the Same Location'
             onChange={({target}) => {
-              onChange('same_home_code', person.legacy_id, relationship, (target.value === 'Y') ? 'N' : 'Y')
+              onChange('same_home_code', (target.value === 'Y') ? 'N' : 'Y')
             }}
-            required={false}
             value={relationship.same_home_code}
           />
         </div>
@@ -100,9 +94,8 @@ const EditRelationshipForm = ({onChange, person, relationship}) => {
             id='absent_parent_code'
             label='Parents Whereabouts Unknown'
             onChange={({target}) => {
-              onChange('absent_parent_code', person.legacy_id, relationship, (target.value === 'Y') ? 'N' : 'Y')
+              onChange('absent_parent_code', (target.value === 'Y') ? 'N' : 'Y')
             }}
-            required={false}
             value={relationship.absent_parent_code}
           />
         </div>
@@ -113,7 +106,7 @@ const EditRelationshipForm = ({onChange, person, relationship}) => {
           id='relationship_start_date'
           label='Start Date'
           value={''}
-          onChange={() => {}}
+          onChange={({target}) => onChange('start_date', (target.value))}
           hasTime={false}
         />
         <DateField
@@ -121,13 +114,39 @@ const EditRelationshipForm = ({onChange, person, relationship}) => {
           id='relationship_end_date'
           label='End Date'
           value={''}
-          onChange={() => {}}
+          onChange={({target}) => onChange('end_date', (target.value))}
           hasTime={false}
         />
       </div>
     </div>
   )
 }
-EditRelationshipForm.propTypes = propTypes
+
+const personPropType = PropTypes.shape({
+  age: PropTypes.string,
+  dateOfBirth: PropTypes.string,
+  legacy_id: PropTypes.string,
+  gender: PropTypes.string,
+  name: PropTypes.string,
+})
+const relationshipPropType = PropTypes.shape({
+  absent_parent_code: PropTypes.string,
+  age: PropTypes.string,
+  dateOfBirth: PropTypes.string,
+  legacy_descriptor: PropTypes.object,
+  gender: PropTypes.string,
+  name: PropTypes.string,
+  person_card_exists: PropTypes.bool,
+  same_home_code: PropTypes.string,
+  secondaryRelationship: PropTypes.string,
+  type: PropTypes.string,
+  type_code: PropTypes.string,
+})
+
+EditRelationshipForm.propTypes = {
+  onChange: PropTypes.func,
+  person: personPropType,
+  relationship: relationshipPropType,
+}
 
 export default EditRelationshipForm

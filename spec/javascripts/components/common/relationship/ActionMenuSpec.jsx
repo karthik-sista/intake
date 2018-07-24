@@ -44,7 +44,9 @@ describe('ActionMenu', () => {
   })
 
   it('renders ModalComponent', () => {
-    expect(renderActionMenu(props).find(EditRelationshipModal).length).toBe(1)
+    expect(
+      renderActionMenu(props).setState({show: true}).find(EditRelationshipModal).length
+    ).toBe(1)
   })
 
   describe('closeModal', () => {

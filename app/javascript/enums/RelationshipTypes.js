@@ -105,7 +105,7 @@ export const RELATIONSHIP_TYPES = Object.freeze([
   {value: '280', label: 'Sister/Sister (Half)'},
   {value: '281', label: 'Sister/Sister (Step)'},
   {value: '282', label: 'Son/De Facto Parent'},
-  {value: '283', label: 'SSon/Father (Adoptive)'},
+  {value: '283', label: 'Son/Father (Adoptive)'},
   {value: '284', label: 'Son/Father (Alleged)'},
   {value: '285', label: 'Son/Father (Birth)'},
   {value: '286', label: 'Son/Father (Foster)'},
